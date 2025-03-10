@@ -1,17 +1,12 @@
-export const CommentInput = ({ value, onChange, onSubmit }) => {
-  const handleSubmit = e => {
-    e.preventDefault();
-    onSubmit(e);
-  };
-
+export const CommentInput = ({ value, onChange }) => {
   return (
-    <form onSubmit={handleSubmit}>
+    <div className="input-group">
       <textarea
+        className="input-textarea"
         value={value}
         onChange={e => onChange(e.target.value)}
-        placeholder="Write a comment"
+        placeholder="Skriv din kommentar..."
       />
-      <button type="submit">Submit</button>
-    </form>
+    </div>
   );
 };

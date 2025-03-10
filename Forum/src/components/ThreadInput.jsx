@@ -11,18 +11,19 @@ export const ThreadInput = ({
   const handleChange = e => onChange(e.target.value);
 
   return (
-    <div className="input group">
-      <label>{label}</label>
+    <div className="input-group">
+      <label className="input-label">{label}</label>
       {isTextArea ? (
         <textarea
-          type="text"
-          rows="10"
+          className="input-textarea"
+          rows="5"
           value={value}
           onChange={handleChange}
           placeholder={placeholder}
         />
       ) : (
         <input
+          className="input-field"
           type="text"
           value={value}
           onChange={handleChange}
@@ -30,10 +31,14 @@ export const ThreadInput = ({
         />
       )}
 
-      {showStatusSelect && ( // visa statusändringsalternativet endast om showStatusSelect är true
-        <select value={status} onChange={onStatusChange}>
-          <option value="open">Open</option>
-          <option value="closed">closed</option>
+      {showStatusSelect && (
+        <select
+          className="input-select"
+          value={status}
+          onChange={onStatusChange}
+        >
+          <option value="open">Öppen</option>
+          <option value="closed">Stängd</option>
         </select>
       )}
     </div>

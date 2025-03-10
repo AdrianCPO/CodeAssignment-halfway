@@ -44,27 +44,28 @@ export const AddThreadView = () => {
   };
 
   return (
-    <section className="new-thread-view-container">
-      <h1>Ny tråd</h1>
-      <form onSubmit={handleSubmit}>
+    <section className="container new-thread-container">
+      <h1>Skapa Ny Tråd</h1>
+
+      <form onSubmit={handleSubmit} className="new-thread-form">
         <ThreadInput
-          label="Title"
+          label="Titel"
           value={threadTitle}
           onChange={setThreadTitle}
-          placeholder="Enter thread title"
+          placeholder="Ange trådens titel"
         />
         <ThreadInput
-          label="Content"
+          label="Innehåll"
           value={threadContent}
           onChange={setThreadContent}
-          placeholder="Enter thread content"
+          placeholder="Ange trådens innehåll"
           isTextArea={true}
         />
         <ThreadInput
-          label="Author"
+          label="Författare"
           value={threadAuthor}
           onChange={setThreadAuthor}
-          placeholder="Enter your name"
+          placeholder="Ange ditt namn"
         />
         <ThreadInput
           label="Status"
@@ -72,7 +73,10 @@ export const AddThreadView = () => {
           onChange={setThreadStatus}
           showStatusSelect={true}
         />
-        <button type="submit">Submit</button>
+
+        <button type="submit" className="btn">
+          Skapa Tråd
+        </button>
       </form>
     </section>
   );

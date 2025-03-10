@@ -7,30 +7,41 @@ import {
   createThread,
   updateThread,
   deleteThread,
+  searchThreads,
   getThreadSortedByActivity,
   getThreadSortedByComments,
 } from "../models/threadModel.js";
 
 export const getThreads = (req, res) => {
-  const { sortBy } = req.query;
+  const { sortBy, searchTerm } = req.query;
   console.log("Sorting by:", sortBy);
+  console.log("Search term:", searchTerm);
 
   try {
     let threads;
 
-    if (sortBy === "activity") {
+    if (searchTerm) {
+      console.log("Searching with search term:", searchTerm);
+      threads = searchThreads(searchTerm);
+    } else if (sortBy === "activity") {
+      console.log("Sorting by activity");
       threads = getThreadSortedByActivity();
     } else if (sortBy === "comments") {
+      console.log("Sorting by comments");
       threads = getThreadSortedByComments();
     } else {
+      console.log("Fetching all threads");
       threads = getAllThreads();
     }
+
+    console.log("Returning threads:", threads);
     res.json(threads);
   } catch (error) {
-    console.error("Error fetching threads:", error.message);
-    res
-      .status(500)
-      .json({ message: "An error occurred while fetching threads" });
+    console.error("Error fetching threads:", error);
+    res.status(500).json({
+      message: "An error occurred while fetching threads",
+      error: error.message,
+    });
   }
 };
 
@@ -83,7 +94,7 @@ export const newThread = (req, res) => {
 };
 
 export const editThread = (req, res) => {
-  const threadId = req.params.threadIdd;
+  const threadId = req.params.threadId;
   const {
     thread_title,
     thread_content,
@@ -101,8 +112,12 @@ export const editThread = (req, res) => {
       thread_timestamp,
       thread_status
     );
-    const thread = getAllThreads();
-    res.json(thread);
+    const updatedThread = getThreadById(threadId);
+    if (updatedThread) {
+      res.json(updatedThread);
+    } else {
+      res.status(404).json({ message: "Thread not found" });
+    }
   } catch (error) {
     console.error("Error updating thread:", error.message);
     res
@@ -111,17 +126,22 @@ export const editThread = (req, res) => {
   }
 };
 
-export const deleteThreadById = (req, res) => {
-  const threadId = req.params.threadId;
-
+export const deleteThreadById = async (req, res) => {
   try {
-    deleteThread(threadId);
-    const threads = getAllThreads();
-    res.json(threads);
+    const result = await deleteThread(req.params.threadId); // Kör deleteThread
+
+    if (result.error) {
+      return res.status(400).json({ message: result.error });
+    }
+
+    // Hämta de uppdaterade trådarna efter radering
+    const threads = await getAllThreads();
+    res.json(threads); // Returnera alla trådar som är kvar efter raderingen
   } catch (error) {
     console.error("Error deleting thread:", error.message);
-    res
-      .status(500)
-      .json({ message: "An error occurred while deleting the thread" });
+    res.status(500).json({
+      message: "An error occurred while deleting the thread",
+      error: error.message,
+    });
   }
 };

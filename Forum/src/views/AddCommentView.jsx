@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { useCommentContext } from "../CommentContextProvider"; 
+import { useCommentContext } from "../CommentContextProvider";
 import { CommentInput } from "../components/commentInput";
 
 export const AddCommentView = () => {
@@ -61,20 +61,28 @@ export const AddCommentView = () => {
   };
 
   return (
-    <section className="new-comment-view-container">
-      <h1>Lägg till kommentar</h1>
+    <section className="container new-comment-container">
+      <h1>Lägg till Kommentar</h1>
 
-      <CommentInput
-        value={comment}
-        onChange={setComment}
-        onSubmit={handleSubmit} // Ingen behov av onClick här
-      />
-      <input
-        type="text"
-        value={author}
-        onChange={e => setAuthor(e.target.value)}
-        placeholder="Your name"
-      />
+      <form onSubmit={handleSubmit} className="new-comment-form">
+        <CommentInput
+          value={comment}
+          onChange={setComment}
+          onSubmit={handleSubmit}
+        />
+
+        <input
+          className="input-field"
+          type="text"
+          value={author}
+          onChange={e => setAuthor(e.target.value)}
+          placeholder="Ditt namn"
+        />
+
+        <button type="submit" className="btn">
+          Lägg till Kommentar
+        </button>
+      </form>
     </section>
   );
 };

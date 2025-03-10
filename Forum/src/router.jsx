@@ -10,6 +10,7 @@ import { AddThreadView } from "./views/AddThreadView";
 import { ThreadView } from "./views/ThreadView";
 import { ThreadDetailView } from "./views/ThreadDetailView";
 import { AddCommentView } from "./views/AddCommentView";
+import { EditCommentView } from "./views/EditCommentView";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -27,6 +28,7 @@ export const router = createBrowserRouter(
       <Route path="/new-thread" element={<AddThreadView />} />
       <Route path="/new-comment/:threadId" element={<AddCommentView />} />
       <Route path="/edit-thread" element={<EditThreadView />} />
+      <Route path="/edit-comment" element={<EditCommentView />} />
       <Route path="/delete-thread" element={<DeleteThreadView />} />
     </Route>
   )

@@ -15,8 +15,8 @@ const router = express.Router();
 router.get("/", getThreads);
 router.get("/:threadId", getThreadByIdController);
 router.post("/new-thread", newThread);
-router.put("/edit-thread/:id", editThread);
-router.delete("/delete-thread/:id", deleteThreadById);
+router.put("/edit-thread/:threadId", editThread);
+router.delete("/delete-thread/:threadId", deleteThreadById);
 
 // Hantera 404 för ogiltiga rutter
 router.use((req, res) => {

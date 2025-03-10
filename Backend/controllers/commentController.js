@@ -18,6 +18,25 @@ export const getComments = (req, res) => {
       .json({ message: "An error occurred while fetching comments" });
   }
 };
+export const getCommentById = (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const stmt = db.prepare("SELECT * FROM comments WHERE comment_id = ?");
+    const comment = stmt.get(id);
+
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    res.json(comment);
+  } catch (error) {
+    console.error("Error fetching comment:", error.message);
+    res
+      .status(500)
+      .json({ message: "An error occurred while fetching the comment" });
+  }
+};
 
 export const getCommentsByThreadIdController = (req, res) => {
   const threadId = req.params.threadId;

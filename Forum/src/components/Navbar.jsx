@@ -15,6 +15,9 @@ export const Navbar = () => {
             <NavLink to="/edit-thread">Redigera Tråd</NavLink>
           </li>
           <li className="navbar-item">
+            <NavLink to="/edit-comment">Redigera Kommentar</NavLink>
+          </li>
+          <li className="navbar-item">
             <NavLink to="/delete-thread">Ta bort Tråd</NavLink>
           </li>
         </ul>

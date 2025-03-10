@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getComments,
+  getCommentById,
   getCommentsByThreadIdController,
   newComment,
   editComment,
@@ -10,6 +11,7 @@ import {
 const router = express.Router();
 
 router.get("/", getComments);
+router.get("/comment/:id", getCommentById);
 router.get("/:threadId", getCommentsByThreadIdController);
 router.post("/:threadId/new-comment", newComment);
 router.put("/edit-comment/:id", editComment);

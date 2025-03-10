@@ -14,25 +14,69 @@ export const getAllThreads = () => {
     throw new Error("Error fetching threads from database");
   }
 };
-
-export const getThreadSortedByActivity = () => {
+export const searchThreads = searchTerm => {
   const query = `
     SELECT 
       threads.thread_id,
       threads.thread_title, 
       threads.thread_content,
       threads.thread_author,
-      threads.thread_timestamp, 
+      threads.thread_timestamp,
       threads.thread_status,
-      MAX(comments.comment_timestamp) AS last_comment_timestamp  -- Ge MAX ett alias
+      COUNT(comments.comment_id) AS comment_count,
+      COALESCE(MAX(comments.comment_timestamp), threads.thread_timestamp) AS last_activity
     FROM threads
     LEFT JOIN comments ON threads.thread_id = comments.thread_id
+    WHERE 
+      LOWER(threads.thread_title) LIKE LOWER(?) OR 
+      LOWER(threads.thread_content) LIKE LOWER(?) OR
+      LOWER(threads.thread_author) LIKE LOWER(?)
     GROUP BY threads.thread_id
-    ORDER BY COALESCE(last_comment_timestamp, threads.thread_timestamp) DESC;
+    ORDER BY last_activity DESC;
   `;
+
   try {
     const stmt = db.prepare(query);
-    return stmt.all(); // Använd .all() för att hämta flera resultat
+    const result = stmt.all(
+      `%${searchTerm}%`,
+      `%${searchTerm}%`,
+      `%${searchTerm}%`
+    );
+
+    return result.map(thread => ({
+      ...thread,
+      last_activity: new Date(thread.last_activity).toISOString(), // Säkerställ korrekt format
+    }));
+  } catch (error) {
+    console.error("Error searching threads:", error);
+    return [];
+  }
+};
+
+export const getThreadSortedByActivity = () => {
+  const query = `
+  SELECT 
+    threads.thread_id,
+    threads.thread_title, 
+    threads.thread_content,
+    threads.thread_author,
+    threads.thread_timestamp, 
+    threads.thread_status,
+    COALESCE(MAX(comments.comment_timestamp), threads.thread_timestamp) AS last_activity
+  FROM threads
+  LEFT JOIN comments ON threads.thread_id = comments.thread_id
+  GROUP BY threads.thread_id
+  ORDER BY last_activity DESC;
+  `;
+
+  try {
+    const stmt = db.prepare(query);
+    const threads = stmt.all();
+
+    return threads.map(thread => ({
+      ...thread,
+      last_activity: new Date(thread.last_activity).toISOString(), // Formatera korrekt
+    }));
   } catch (error) {
     console.error("Error fetching threads sorted by activity:", error.message);
     throw new Error("Error fetching threads sorted by activity");
@@ -124,10 +168,26 @@ export const updateThread = (
 
 export const deleteThread = threadId => {
   try {
-    const stmt = db.prepare("DELETE FROM threads WHERE thread_id = ?");
-    stmt.run(threadId);
+    // Ta bort alla kommentarer som är kopplade till tråden
+    const deleteCommentsStmt = db.prepare(
+      "DELETE FROM comments WHERE thread_id = ?"
+    );
+    deleteCommentsStmt.run(threadId);
+
+    // Ta bort själva tråden
+    const deleteThreadStmt = db.prepare(
+      "DELETE FROM threads WHERE thread_id = ?"
+    );
+    const result = deleteThreadStmt.run(threadId);
+
+    if (result.changes === 0) {
+      console.error(`No thread found with ID ${threadId}`);
+      return { error: "Thread not found" };
+    }
+
+    return { success: true }; // Tråden och dess kommentarer raderades
   } catch (error) {
     console.error("Error deleting thread from database:", error.message);
-    throw new Error("Error deleting thread from database");
+    return { error: "Error deleting thread from database" };
   }
 };

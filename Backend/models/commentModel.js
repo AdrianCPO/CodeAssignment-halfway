@@ -59,7 +59,13 @@ export const updateComment = (
 export const deleteComment = id => {
   try {
     const stmt = db.prepare("DELETE FROM comments WHERE comment_id = ?");
-    stmt.run(id);
+    const result = stmt.run(id);
+
+    if (result.changes === 0) {
+      console.error("No comment was deleted. Maybe the comment doesn't exist.");
+    } else {
+      console.log(`Comment with id ${id} was deleted.`);
+    }
   } catch (error) {
     console.error("Error deleting comment from database:", error.message);
     throw new Error("Error deleting comment from database");
