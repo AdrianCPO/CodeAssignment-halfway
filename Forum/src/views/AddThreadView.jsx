@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useThreadContext } from "../ThreadContextProvider";
 import { ThreadInput } from "../components/ThreadInput";
-import { updateThread } from "../components/updateThread";
+import { fetchThreads, createThread } from "../components/apiService";
 
 export const AddThreadView = () => {
   const [threadTitle, setThreadTitle] = useState("");
   const [threadContent, setThreadContent] = useState("");
   const [threadAuthor, setThreadAuthor] = useState("");
   const [threadStatus, setThreadStatus] = useState("open"); // default status
-  const { setThreads } = useThreadContext(); // Hämtar setThreads från context
+  const { setThreads } = useThreadContext();
 
   const handleSubmit = async e => {
     e.preventDefault();
@@ -22,31 +22,20 @@ export const AddThreadView = () => {
       thread_status: threadStatus,
     };
 
-    // Skicka den nya tråden till API:et
-    const response = await fetch(
-      "http://localhost:3000/api/threads/new-thread",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newThread),
+    try {
+      const addedThread = await createThread(newThread);
+      if (addedThread) {
+        const updatedThreads = await fetchThreads(); // Hämta alla trådar igen
+        setThreads(updatedThreads); // Uppdatera trådlistan i context
       }
-    );
-
-    if (response.ok) {
-      const addedThread = await response.json();
-      const updatedThreads = await updateThread(); // Hämta alla trådar igen
-      setThreads(updatedThreads); // Uppdatera trådlistan i context
-    } else {
-      console.error("Det gick inte att skapa tråden.");
+    } catch (error) {
+      console.error("Det gick inte att skapa tråden:", error);
     }
   };
 
   return (
     <section className="container new-thread-container">
       <h1>Skapa Ny Tråd</h1>
-
       <form onSubmit={handleSubmit} className="new-thread-form">
         <ThreadInput
           label="Titel"
@@ -73,7 +62,6 @@ export const AddThreadView = () => {
           onChange={setThreadStatus}
           showStatusSelect={true}
         />
-
         <button type="submit" className="btn">
           Skapa Tråd
         </button>

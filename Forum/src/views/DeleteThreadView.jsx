@@ -1,49 +1,42 @@
 import { useState, useEffect } from "react";
-import { updateThread } from "../components/updateThread";
+import { fetchThreads, deleteThread } from "../components/apiService";
 
 export const DeleteThreadView = () => {
   const [threads, setThreads] = useState([]);
 
-  const handleDelete = async threadId => {
-    // Ta bort tråden från backend
-    const response = await fetch(
-      `http://localhost:3000/api/threads/delete-thread/${threadId}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (response.ok) {
+  const handleDelete = async (threadId) => {
+    try {
+      await deleteThread(threadId);
       console.log(`Thread with ID ${threadId} deleted successfully`);
 
       // Uppdatera trådlistan genom att filtrera bort den borttagna tråden
-      setThreads(prevThreads =>
-        prevThreads.filter(thread => thread.thread_id !== threadId)
+      setThreads((prevThreads) =>
+        prevThreads.filter((thread) => thread.thread_id !== threadId)
       );
-    } else {
-      console.error("Failed to delete thread");
+    } catch (error) {
+      console.error("Failed to delete thread", error);
     }
   };
 
   useEffect(() => {
-    const fetchThreads = async () => {
-      const data = await updateThread(); // Använd updateThread för att hämta trådar
-      setThreads(data);
+    const loadThreads = async () => {
+      try {
+        const data = await fetchThreads(); // Hämta trådar från API
+        setThreads(data);
+      } catch (error) {
+        console.error("Failed to fetch threads", error);
+      }
     };
-    fetchThreads();
+    loadThreads();
   }, []);
 
   return (
     <div className="container delete-thread-container">
       <h1>Ta bort Tråd</h1>
-
       {threads.length === 0 ? (
         <p className="info-text">Inga trådar att visa.</p>
       ) : (
-        threads.map(thread => (
+        threads.map((thread) => (
           <div key={thread.thread_id} className="thread-card">
             <h2>{thread.thread_title}</h2>
             <p>{thread.thread_content}</p>

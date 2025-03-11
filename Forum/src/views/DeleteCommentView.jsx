@@ -1,14 +1,9 @@
-import { useEffect } from "react";
+import { deleteComment } from "../components/apiServiceComments";
 
 export const DeleteCommentView = ({ comments, setComments }) => {
   const handleCommentDelete = async id => {
     try {
-      await fetch(`http://localhost:3000/api/comments/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      await deleteComment(id);
 
       // Ta bort kommentaren från listan utan att behöva hämta om alla kommentarer
       setComments(prevComments =>

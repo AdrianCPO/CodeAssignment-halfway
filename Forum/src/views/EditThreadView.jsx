@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { ThreadInput } from "../components/ThreadInput";
-import { updateThread } from "../components/updateThread"; // Om du inte använder den här i detta fall, kan den tas bort.
-import { updateSingleThread } from "../components/updateSingleThread";
+import { fetchThreads, updateThreadById } from "../components/apiService";
 
 export const EditThreadView = () => {
   const [title, setTitle] = useState("");
@@ -13,12 +12,15 @@ export const EditThreadView = () => {
   const [threads, setThreads] = useState([]);
 
   useEffect(() => {
-    // Ladda alla trådar från servern vid första renderingen
-    const fetchThreads = async () => {
-      const data = await updateThread(); // Hämtar alla trådar från servern
-      setThreads(data);
+    const loadThreads = async () => {
+      try {
+        const data = await fetchThreads(); // Hämta alla trådar
+        setThreads(data);
+      } catch (error) {
+        console.error("Failed to fetch threads", error);
+      }
     };
-    fetchThreads();
+    loadThreads();
   }, []);
 
   const handleUpdate = async e => {
@@ -32,29 +34,28 @@ export const EditThreadView = () => {
       thread_status: status,
     };
 
-    // Skicka uppdateringen till servern
-    const updatedThreadResponse = await updateSingleThread(
-      threadId,
-      updatedThread
-    );
+    try {
+      const updatedThreadResponse = await updateThreadById(
+        threadId,
+        updatedThread
+      ); // Använd den nya funktionen
 
-    if (updatedThreadResponse) {
-      // Uppdatera den specifika tråden i den lokala listan med den uppdaterade tråden
-      setThreads(prevThreads =>
-        prevThreads.map(thread =>
-          thread.thread_id === updatedThreadResponse.thread_id
-            ? updatedThreadResponse
-            : thread
-        )
-      );
-    } else {
-      console.error("Failed to update thread");
+      if (updatedThreadResponse) {
+        setThreads(prevThreads =>
+          prevThreads.map(thread =>
+            thread.thread_id === updatedThreadResponse.thread_id
+              ? updatedThreadResponse
+              : thread
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Failed to update thread", error);
     }
   };
 
   const handleSelectChange = e => {
     const selectedThreadId = e.target.value;
-
     const selectedThread = threads.find(
       thread => thread.thread_id.toString() === selectedThreadId
     );
@@ -72,7 +73,6 @@ export const EditThreadView = () => {
   return (
     <div className="container edit-thread-container">
       <h1>Redigera Tråd</h1>
-
       <form onSubmit={handleUpdate} className="edit-thread-form">
         <label htmlFor="thread-select">Välj en tråd:</label>
         <select

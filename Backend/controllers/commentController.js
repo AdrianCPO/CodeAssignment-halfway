@@ -1,3 +1,6 @@
+import db from "../config/database.js";
+
+
 import {
   getAllComments,
   getCommentsByThreadId,
@@ -19,6 +22,7 @@ export const getComments = (req, res) => {
 // Hämta en specifik kommentar via ID
 export const getCommentById = (req, res) => {
   const id = req.params.id;
+  console.log("ID:", id);
   if (!id || isNaN(id)) {
     return res.status(400).json({ message: "Invalid comment ID" });
   }

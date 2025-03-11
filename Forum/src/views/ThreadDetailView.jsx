@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { DeleteCommentView } from "./DeleteCommentView"; // Importera DeleteCommentView
+import { fetchThreadById } from "../components/apiService";
+import { deleteComment } from "../components/apiServiceComments";
 
 export const ThreadDetailView = () => {
   const { threadId } = useParams();
@@ -8,17 +9,12 @@ export const ThreadDetailView = () => {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showComments, setShowComments] = useState(false); // ✅ Hanterar visning av kommentarer
+  const [showComments, setShowComments] = useState(false);
 
-  // Hämtar trådinformation
   useEffect(() => {
     const fetchThreadDetails = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:3000/api/threads/${threadId}`
-        );
-        if (!response.ok) throw new Error("Det gick inte att hämta tråden");
-        const data = await response.json();
+        const data = await fetchThreadById(threadId);
         setThread(data);
         setLoading(false);
       } catch (error) {
@@ -29,7 +25,6 @@ export const ThreadDetailView = () => {
     fetchThreadDetails();
   }, [threadId]);
 
-  // Hämtar kommentarer för tråden
   useEffect(() => {
     const fetchComments = async () => {
       try {
@@ -38,7 +33,7 @@ export const ThreadDetailView = () => {
         );
         if (!response.ok) {
           if (response.status === 404) {
-            setComments([]); // Om inga kommentarer hittas, sätt en tom array
+            setComments([]);
           } else {
             throw new Error("Det gick inte att hämta kommentarer");
           }
@@ -54,7 +49,17 @@ export const ThreadDetailView = () => {
     fetchComments();
   }, [threadId]);
 
-  // Hantera laddning, fel och inga kommentarer
+  const handleDeleteComment = async commentId => {
+    try {
+      await deleteComment(commentId);
+      setComments(prevComments =>
+        prevComments.filter(comment => comment.comment_id !== commentId)
+      );
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+    }
+  };
+
   if (loading) return <div>Laddar trådinformation...</div>;
   if (error) return <div>Fel: {error}</div>;
   if (!thread) return <div>Tråden kunde inte hittas.</div>;
@@ -82,6 +87,12 @@ export const ThreadDetailView = () => {
               <div key={comment.comment_id} className="comment-card">
                 <p className="comment-author">{comment.comment_author}</p>
                 <p>{comment.comment_content}</p>
+                <button
+                  className="btn danger"
+                  onClick={() => handleDeleteComment(comment.comment_id)}
+                >
+                  Ta bort
+                </button>
               </div>
             ))}
           </div>

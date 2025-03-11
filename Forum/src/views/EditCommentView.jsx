@@ -1,31 +1,51 @@
 import { useState, useEffect } from "react";
+import {
+  fetchCommentsByThreadId,
+  updateComment,
+} from "../components/apiServiceComments";
+import { fetchThreads } from "../components/apiService";
 
 export const EditCommentView = () => {
+  const [threadId, setThreadId] = useState("");
   const [commentId, setCommentId] = useState("");
   const [commentContent, setCommentContent] = useState("");
   const [author, setAuthor] = useState("");
   const [timestamp, setTimestamp] = useState(new Date().toISOString());
+  const [threads, setThreads] = useState([]);
   const [comments, setComments] = useState([]);
 
-  // Hämta alla kommentarer vid första renderingen
   useEffect(() => {
-    const fetchComments = async () => {
+    const loadThreads = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/comments");
-        if (!response.ok) {
-          throw new Error("Failed to fetch comments");
-        }
-        const data = await response.json();
+        const data = await fetchThreads(); // Hämta alla trådar
+        setThreads(data);
+      } catch (error) {
+        console.error("Error fetching threads:", error);
+      }
+    };
+    loadThreads();
+  }, []);
+
+  useEffect(() => {
+    const loadComments = async () => {
+      try {
+        if (!threadId) return;
+        const data = await fetchCommentsByThreadId(threadId); // Hämta kommentarer för vald tråd
         setComments(data);
       } catch (error) {
         console.error("Error fetching comments:", error);
       }
     };
-    fetchComments();
-  }, []);
+    loadComments();
+  }, [threadId]);
 
-  // Hantera val av kommentar att redigera
-  const handleSelectChange = e => {
+  const handleThreadSelectChange = e => {
+    setThreadId(e.target.value);
+    setComments([]);
+    setCommentId("");
+  };
+
+  const handleCommentSelectChange = e => {
     const selectedCommentId = e.target.value;
     const selectedComment = comments.find(
       comment => comment.comment_id.toString() === selectedCommentId
@@ -39,7 +59,6 @@ export const EditCommentView = () => {
     }
   };
 
-  // Hantera uppdatering av en kommentar
   const handleUpdate = async e => {
     e.preventDefault();
 
@@ -50,22 +69,11 @@ export const EditCommentView = () => {
     };
 
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/comments/edit-comment/${commentId}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedComment),
-        }
+      const updatedCommentResponse = await updateComment(
+        commentId,
+        updatedComment
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to update comment");
-      }
-
-      const updatedCommentResponse = await response.json();
-
-      // Uppdatera den specifika kommentaren i listan lokalt
       setComments(prevComments =>
         prevComments.map(comment =>
           comment.comment_id === updatedCommentResponse.comment_id
@@ -73,10 +81,9 @@ export const EditCommentView = () => {
             : comment
         )
       );
-
-      alert("Comment updated successfully!");
+      alert("Kommentar uppdaterad!");
     } catch (error) {
-      console.error("Error updating comment:", error);
+      console.error("Fel vid uppdatering av kommentar:", error);
     }
   };
 
@@ -85,20 +92,39 @@ export const EditCommentView = () => {
       <h1>Redigera Kommentar</h1>
 
       <form onSubmit={handleUpdate} className="edit-comment-form">
-        <label htmlFor="comment-select">Välj en kommentar:</label>
+        <label htmlFor="thread-select">Välj en tråd:</label>
         <select
-          id="comment-select"
-          className="comment-select"
-          value={commentId}
-          onChange={handleSelectChange}
+          id="thread-select"
+          className="thread-select"
+          value={threadId}
+          onChange={handleThreadSelectChange}
         >
-          <option value="">Välj en kommentar</option>
-          {comments.map(comment => (
-            <option key={comment.comment_id} value={comment.comment_id}>
-              {comment.comment_content.substring(0, 30)}...
+          <option value="">Välj en tråd</option>
+          {threads.map(thread => (
+            <option key={thread.thread_id} value={thread.thread_id}>
+              {thread.thread_title}
             </option>
           ))}
         </select>
+
+        {threadId && (
+          <>
+            <label htmlFor="comment-select">Välj en kommentar:</label>
+            <select
+              id="comment-select"
+              className="comment-select"
+              value={commentId}
+              onChange={handleCommentSelectChange}
+            >
+              <option value="">Välj en kommentar</option>
+              {comments.map(comment => (
+                <option key={comment.comment_id} value={comment.comment_id}>
+                  {comment.comment_content.substring(0, 30)}...
+                </option>
+              ))}
+            </select>
+          </>
+        )}
 
         <textarea
           className="input-textarea"

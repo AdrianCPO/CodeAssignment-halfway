@@ -144,10 +144,8 @@ export const deleteThreadById = async (req, res) => {
 // Gemensam felhanteringsfunktion
 const handleServerError = (res, action, error) => {
   console.error(`Error ${action}:`, error.message);
-  res
-    .status(500)
-    .json({
-      message: `An error occurred while ${action}`,
-      error: error.message,
-    });
+  res.status(500).json({
+    message: `An error occurred while ${action}`,
+    error: error.message,
+  });
 };

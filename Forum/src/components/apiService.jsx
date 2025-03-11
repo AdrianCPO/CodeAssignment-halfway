@@ -43,6 +43,38 @@ export const createThread = async newThread => {
     throw error;
   }
 };
+export const updateThread = async () => {
+  try {
+    const response = await fetch("http://localhost:3000/api/threads");
+    if (!response.ok) {
+      throw new Error("Failed to fetch threads");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(error);
+    return []; // Returnera en tom array om något går fel
+  }
+};
+export const updateThreadById = async (threadId, updatedThread) => {
+  try {
+    const response = await fetch(
+      `http://localhost:3000/api/threads/edit-thread/${threadId}`, // Se till att din backend stödjer denna route
+      {
+        method: "PUT", // Eller "PATCH" om du vill uppdatera endast vissa fält
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedThread),
+      }
+    );
+    if (!response.ok) throw new Error("Failed to update thread");
+    return await response.json();
+  } catch (error) {
+    console.error("Error updating thread:", error);
+    throw error;
+  }
+};
 
 export const deleteThread = async threadId => {
   try {
