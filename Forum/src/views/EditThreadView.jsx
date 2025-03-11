@@ -7,14 +7,14 @@ export const EditThreadView = () => {
   const [content, setContent] = useState("");
   const [author, setAuthor] = useState("");
   const [timestamp, setTimestamp] = useState(new Date().toISOString());
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("open"); // Standardvärde
   const [threadId, setThreadId] = useState("");
   const [threads, setThreads] = useState([]);
 
   useEffect(() => {
     const loadThreads = async () => {
       try {
-        const data = await fetchThreads(); // Hämta alla trådar
+        const data = await fetchThreads();
         setThreads(data);
       } catch (error) {
         console.error("Failed to fetch threads", error);
@@ -38,7 +38,7 @@ export const EditThreadView = () => {
       const updatedThreadResponse = await updateThreadById(
         threadId,
         updatedThread
-      ); // Använd den nya funktionen
+      );
 
       if (updatedThreadResponse) {
         setThreads(prevThreads =>
@@ -114,12 +114,17 @@ export const EditThreadView = () => {
           onChange={setTimestamp}
           placeholder="Ange datum"
         />
-        <ThreadInput
-          label="Status"
+
+        {/* Dropdown för status istället för ett textfält */}
+        <label>Status</label>
+        <select
           value={status}
-          onChange={setStatus}
-          showStatusSelect={true}
-        />
+          onChange={e => setStatus(e.target.value)}
+          className="status-select"
+        >
+          <option value="open">Öppen</option>
+          <option value="closed">Stängd</option>
+        </select>
 
         <button type="submit" className="btn">
           Uppdatera

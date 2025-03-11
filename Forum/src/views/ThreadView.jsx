@@ -58,6 +58,10 @@ export const ThreadView = () => {
           <p>{thread.thread_content}</p>
           <p>Antal kommentarer: {thread.comment_count}</p>
           <p>
+            Status:{" "}
+            {thread.thread_status === "closed" ? "🔒 Stängd" : "✅ Öppen"}
+          </p>
+          <p>
             Senaste aktivitet:{" "}
             {thread.last_activity
               ? new Date(thread.last_activity).toLocaleString()
@@ -66,9 +70,11 @@ export const ThreadView = () => {
           <Link to={`/threads/${thread.thread_id}`} className="btn">
             Visa detaljer
           </Link>
-          <Link to={`/new-comment/${thread.thread_id}`} className="btn">
-            Kommentera
-          </Link>
+          {thread.thread_status === "open" && (
+            <Link to={`/new-comment/${thread.thread_id}`} className="btn">
+              Kommentera
+            </Link>
+          )}
         </div>
       ))}
     </div>

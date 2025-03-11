@@ -1,4 +1,4 @@
-import db from "../config/database.js";
+import { db } from "../config/database.js";
 
 // Generisk SQL-hanteringsfunktion för att minska kodupprepning
 const runQuery = (query, params = [], errorMessage) => {

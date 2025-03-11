@@ -70,7 +70,9 @@ export const ThreadDetailView = () => {
       <p>{thread.thread_content}</p>
       <h3>Författare: {thread.thread_author}</h3>
       <p>Publicerad: {thread.thread_timestamp}</p>
-      <p>Status: {thread.thread_status}</p>
+      <p>
+        Status: {thread.thread_status === "closed" ? "🔒 Stängd" : "✅ Öppen"}
+      </p>
 
       <p>Antal kommentarer: {comments.length}</p>
 
@@ -97,6 +99,17 @@ export const ThreadDetailView = () => {
             ))}
           </div>
         ))}
+
+      {/* Visar bara kommentarsformuläret om tråden är öppen */}
+      {thread.thread_status === "open" ? (
+        <Link to={`/new-comment/${thread.thread_id}`} className="btn">
+          Lägg till kommentar
+        </Link>
+      ) : (
+        <p className="comment-locked">
+          🔒 Denna tråd är stängd för kommentarer.
+        </p>
+      )}
     </div>
   );
 };

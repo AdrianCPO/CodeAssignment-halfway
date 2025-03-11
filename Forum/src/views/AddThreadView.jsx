@@ -25,8 +25,8 @@ export const AddThreadView = () => {
     try {
       const addedThread = await createThread(newThread);
       if (addedThread) {
-        const updatedThreads = await fetchThreads(); // Hämta alla trådar igen
-        setThreads(updatedThreads); // Uppdatera trådlistan i context
+        const updatedThreads = await fetchThreads();
+        setThreads(updatedThreads);
       }
     } catch (error) {
       console.error("Det gick inte att skapa tråden:", error);
@@ -56,12 +56,18 @@ export const AddThreadView = () => {
           onChange={setThreadAuthor}
           placeholder="Ange ditt namn"
         />
-        <ThreadInput
-          label="Status"
+
+        {/* Här använder vi en select dropdown istället för ett textfält */}
+        <label>Status</label>
+        <select
           value={threadStatus}
-          onChange={setThreadStatus}
-          showStatusSelect={true}
-        />
+          onChange={e => setThreadStatus(e.target.value)}
+          className="status-select"
+        >
+          <option value="open">Öppen</option>
+          <option value="closed">Stängd</option>
+        </select>
+
         <button type="submit" className="btn">
           Skapa Tråd
         </button>

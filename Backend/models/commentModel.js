@@ -1,4 +1,4 @@
-import db from "../config/database.js";
+import { db } from "../config/database.js";
 
 // Funktion för att köra SQL-frågor med parametrar och bättre felhantering
 const runQuery = (query, params = [], errorMessage) => {

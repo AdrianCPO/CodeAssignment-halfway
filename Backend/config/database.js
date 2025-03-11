@@ -5,11 +5,4 @@
 
 import Database from "better-sqlite3";
 
-let db;
-try {
-  db = new Database("../forum.db");
-} catch (error) {
-  console.error("Failed to connect to database:", error.message);
-}
-
-export default db;
+export const db = new Database("../forum.db");

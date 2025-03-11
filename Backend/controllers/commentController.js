@@ -1,6 +1,5 @@
-import db from "../config/database.js";
-
-
+import { db } from "../config/database.js";
+import { handleServerError } from "../utils/handleServerError.js";
 import {
   getAllComments,
   getCommentsByThreadId,
@@ -110,10 +109,4 @@ export const deleteCommentById = (req, res) => {
   } catch (error) {
     handleServerError(res, "deleting the comment", error);
   }
-};
-
-// Gemensam felhanteringsfunktion för att minska kodupprepning
-const handleServerError = (res, action, error) => {
-  console.error(`Error ${action}:`, error.message);
-  res.status(500).json({ message: `An error occurred while ${action}` });
 };

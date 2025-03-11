@@ -1,3 +1,4 @@
+import { handleServerError } from "../utils/handleServerError.js";
 import {
   getAllThreads,
   getThreadById,
@@ -139,13 +140,4 @@ export const deleteThreadById = async (req, res) => {
   } catch (error) {
     handleServerError(res, "deleting the thread", error);
   }
-};
-
-// Gemensam felhanteringsfunktion
-const handleServerError = (res, action, error) => {
-  console.error(`Error ${action}:`, error.message);
-  res.status(500).json({
-    message: `An error occurred while ${action}`,
-    error: error.message,
-  });
 };
