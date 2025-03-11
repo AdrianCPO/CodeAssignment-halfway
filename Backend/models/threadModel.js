@@ -1,19 +1,26 @@
-//Här lägger du all databasrelaterad logik. Modeller är ansvariga för att hantera och utföra SQL-frågor mot databasen.
-//Exempel: blogModel.js för att hantera databasoperationer relaterade till blogginlägg (som att hämta, skapa, uppdatera och ta bort bloggar).
-// /models/blogModel.js
 import db from "../config/database.js";
 
-export const getAllThreads = () => {
+// Generisk SQL-hanteringsfunktion för att minska kodupprepning
+const runQuery = (query, params = [], errorMessage) => {
   try {
-    const stmt = db.prepare(
-      "SELECT * FROM threads ORDER BY thread_timestamp DESC"
-    );
-    return stmt.all();
+    const stmt = db.prepare(query);
+    return stmt.all(...params);
   } catch (error) {
-    console.error("Error fetching threads from database:", error.message);
-    throw new Error("Error fetching threads from database");
+    console.error(`${errorMessage}:`, error.message);
+    throw new Error(errorMessage);
   }
 };
+
+// Hämta alla trådar, sorterade efter senaste aktivitet
+export const getAllThreads = () => {
+  return runQuery(
+    "SELECT * FROM threads ORDER BY thread_timestamp DESC",
+    [],
+    "Error fetching threads from database"
+  );
+};
+
+// Sök trådar efter titel, innehåll eller författare
 export const searchThreads = searchTerm => {
   const query = `
     SELECT 
@@ -35,54 +42,42 @@ export const searchThreads = searchTerm => {
     ORDER BY last_activity DESC;
   `;
 
-  try {
-    const stmt = db.prepare(query);
-    const result = stmt.all(
-      `%${searchTerm}%`,
-      `%${searchTerm}%`,
-      `%${searchTerm}%`
-    );
-
-    return result.map(thread => ({
-      ...thread,
-      last_activity: new Date(thread.last_activity).toISOString(), // Säkerställ korrekt format
-    }));
-  } catch (error) {
-    console.error("Error searching threads:", error);
-    return [];
-  }
+  return runQuery(
+    query,
+    [`%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`],
+    "Error searching threads"
+  ).map(thread => ({
+    ...thread,
+    last_activity: new Date(thread.last_activity).toISOString(),
+  }));
 };
 
+// Hämta trådar sorterade efter aktivitet
 export const getThreadSortedByActivity = () => {
   const query = `
-  SELECT 
-    threads.thread_id,
-    threads.thread_title, 
-    threads.thread_content,
-    threads.thread_author,
-    threads.thread_timestamp, 
-    threads.thread_status,
-    COALESCE(MAX(comments.comment_timestamp), threads.thread_timestamp) AS last_activity
-  FROM threads
-  LEFT JOIN comments ON threads.thread_id = comments.thread_id
-  GROUP BY threads.thread_id
-  ORDER BY last_activity DESC;
+    SELECT 
+      threads.thread_id,
+      threads.thread_title, 
+      threads.thread_content,
+      threads.thread_author,
+      threads.thread_timestamp, 
+      threads.thread_status,
+      COALESCE(MAX(comments.comment_timestamp), threads.thread_timestamp) AS last_activity
+    FROM threads
+    LEFT JOIN comments ON threads.thread_id = comments.thread_id
+    GROUP BY threads.thread_id
+    ORDER BY last_activity DESC;
   `;
 
-  try {
-    const stmt = db.prepare(query);
-    const threads = stmt.all();
-
-    return threads.map(thread => ({
+  return runQuery(query, [], "Error fetching threads sorted by activity").map(
+    thread => ({
       ...thread,
-      last_activity: new Date(thread.last_activity).toISOString(), // Formatera korrekt
-    }));
-  } catch (error) {
-    console.error("Error fetching threads sorted by activity:", error.message);
-    throw new Error("Error fetching threads sorted by activity");
-  }
+      last_activity: new Date(thread.last_activity).toISOString(),
+    })
+  );
 };
 
+// Hämta trådar sorterade efter antal kommentarer
 export const getThreadSortedByComments = () => {
   const query = `
     SELECT
@@ -97,25 +92,24 @@ export const getThreadSortedByComments = () => {
     GROUP BY threads.thread_id
     ORDER BY comment_count DESC;
   `;
-  try {
-    const stmt = db.prepare(query);
-    return stmt.all(); // Använd .all() för att hämta flera resultat
-  } catch (error) {
-    console.error("Error fetching threads sorted by comments:", error.message);
-    throw new Error("Error fetching threads sorted by comments");
-  }
+
+  return runQuery(query, [], "Error fetching threads sorted by comments");
 };
 
+// Hämta en tråd med ID
 export const getThreadById = threadId => {
+  if (!threadId || isNaN(threadId)) throw new Error("Invalid thread ID");
+
   try {
     const stmt = db.prepare("SELECT * FROM threads WHERE thread_id = ?");
-    return stmt.get(threadId); // Försök hämta tråden från databasen
+    return stmt.get(threadId);
   } catch (error) {
     console.error("Error fetching thread from database:", error.message);
     throw new Error("Error fetching thread from database");
   }
 };
 
+// Skapa en ny tråd
 export const createThread = (
   thread_title,
   thread_content,
@@ -123,6 +117,10 @@ export const createThread = (
   thread_timestamp,
   thread_status
 ) => {
+  if (!thread_title || !thread_content || !thread_author) {
+    throw new Error("Missing required fields for creating thread");
+  }
+
   try {
     const stmt = db.prepare(
       "INSERT INTO threads (thread_title, thread_content, thread_author, thread_timestamp, thread_status) VALUES (?, ?, ?, ?, ?)"
@@ -140,6 +138,7 @@ export const createThread = (
   }
 };
 
+// Uppdatera en tråd
 export const updateThread = (
   threadId,
   thread_title,
@@ -148,11 +147,21 @@ export const updateThread = (
   thread_timestamp,
   thread_status
 ) => {
+  if (
+    !threadId ||
+    isNaN(threadId) ||
+    !thread_title ||
+    !thread_content ||
+    !thread_author
+  ) {
+    throw new Error("Invalid or missing fields for updating thread");
+  }
+
   try {
     const stmt = db.prepare(
       "UPDATE threads SET thread_title = ?, thread_content = ?, thread_author = ?, thread_timestamp = ?, thread_status = ? WHERE thread_id = ?"
     );
-    stmt.run(
+    const result = stmt.run(
       thread_title,
       thread_content,
       thread_author,
@@ -160,19 +169,23 @@ export const updateThread = (
       thread_status,
       threadId
     );
+
+    if (result.changes === 0) {
+      throw new Error("No thread was updated. Maybe the thread doesn't exist.");
+    }
   } catch (error) {
     console.error("Error updating thread in database:", error.message);
     throw new Error("Error updating thread in database");
   }
 };
 
+// Radera en tråd och dess kommentarer
 export const deleteThread = threadId => {
+  if (!threadId || isNaN(threadId)) throw new Error("Invalid thread ID");
+
   try {
-    // Ta bort alla kommentarer som är kopplade till tråden
-    const deleteCommentsStmt = db.prepare(
-      "DELETE FROM comments WHERE thread_id = ?"
-    );
-    deleteCommentsStmt.run(threadId);
+    // Ta bort alla kommentarer kopplade till tråden
+    db.prepare("DELETE FROM comments WHERE thread_id = ?").run(threadId);
 
     // Ta bort själva tråden
     const deleteThreadStmt = db.prepare(
@@ -181,13 +194,12 @@ export const deleteThread = threadId => {
     const result = deleteThreadStmt.run(threadId);
 
     if (result.changes === 0) {
-      console.error(`No thread found with ID ${threadId}`);
-      return { error: "Thread not found" };
+      throw new Error("No thread found with given ID");
     }
 
-    return { success: true }; // Tråden och dess kommentarer raderades
+    return { success: true };
   } catch (error) {
     console.error("Error deleting thread from database:", error.message);
-    return { error: "Error deleting thread from database" };
+    throw new Error("Error deleting thread from database");
   }
 };

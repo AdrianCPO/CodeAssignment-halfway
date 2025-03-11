@@ -1,6 +1,3 @@
-//Här samlar du all logik som hanterar själva API-anropen, som att ta emot request-data, anropa modeller och returnera svar till klienten.
-//Exempel: blogController.js som innehåller funktionerna för att hantera blogginlägg (som att hämta, skapa, uppdatera och ta bort bloggar).
-// /controllers/blogController.js
 import {
   getAllThreads,
   getThreadById,
@@ -12,62 +9,57 @@ import {
   getThreadSortedByComments,
 } from "../models/threadModel.js";
 
-export const getThreads = (req, res) => {
+// Validerar om threadId är ett giltigt nummer
+const validateThreadId = (threadId, res) => {
+  if (!threadId || isNaN(threadId)) {
+    res.status(400).json({ message: "Invalid thread ID format" });
+    return false;
+  }
+  return true;
+};
+
+// Hämta alla trådar med sortering eller sökning
+export const getThreads = async (req, res) => {
   const { sortBy, searchTerm } = req.query;
-  console.log("Sorting by:", sortBy);
-  console.log("Search term:", searchTerm);
+  console.log("Sorting by:", sortBy, "Search term:", searchTerm);
 
   try {
     let threads;
-
     if (searchTerm) {
-      console.log("Searching with search term:", searchTerm);
-      threads = searchThreads(searchTerm);
+      threads = await searchThreads(searchTerm);
     } else if (sortBy === "activity") {
-      console.log("Sorting by activity");
-      threads = getThreadSortedByActivity();
+      threads = await getThreadSortedByActivity();
     } else if (sortBy === "comments") {
-      console.log("Sorting by comments");
-      threads = getThreadSortedByComments();
+      threads = await getThreadSortedByComments();
     } else {
-      console.log("Fetching all threads");
-      threads = getAllThreads();
+      threads = await getAllThreads();
     }
 
-    console.log("Returning threads:", threads);
     res.json(threads);
   } catch (error) {
-    console.error("Error fetching threads:", error);
-    res.status(500).json({
-      message: "An error occurred while fetching threads",
-      error: error.message,
-    });
+    handleServerError(res, "fetching threads", error);
   }
 };
 
-export const getThreadByIdController = (req, res) => {
+// Hämta en specifik tråd via ID
+export const getThreadByIdController = async (req, res) => {
   const threadId = req.params.threadId;
-
-  if (isNaN(threadId)) {
-    return res.status(400).json({ message: "Invalid ID format" }); // Kontrollera om id är ogiltigt
-  }
+  if (!validateThreadId(threadId, res)) return;
 
   try {
-    const thread = getThreadById(threadId); // Rätt anrop av modellens funktion
+    const thread = await getThreadById(threadId);
     if (thread) {
-      res.json(thread); // Skicka tråden om den finns
+      res.json(thread);
     } else {
-      res.status(404).json({ message: "Thread not found" }); // Om tråden inte finns
+      res.status(404).json({ message: "Thread not found" });
     }
   } catch (error) {
-    console.error("Error fetching thread:", error.message);
-    res
-      .status(500)
-      .json({ message: "An error occurred while fetching the thread" });
+    handleServerError(res, "fetching the thread", error);
   }
 };
 
-export const newThread = (req, res) => {
+// Skapa en ny tråd
+export const newThread = async (req, res) => {
   const {
     thread_title,
     thread_content,
@@ -76,8 +68,12 @@ export const newThread = (req, res) => {
     thread_status,
   } = req.body;
 
+  if (!thread_title || !thread_content || !thread_author) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
+
   try {
-    createThread(
+    await createThread(
       thread_title,
       thread_content,
       thread_author,
@@ -86,15 +82,15 @@ export const newThread = (req, res) => {
     );
     res.status(201).json({ message: "Thread created successfully" });
   } catch (error) {
-    console.error("Error creating thread:", error.message);
-    res
-      .status(500)
-      .json({ message: "An error occurred while creating the thread" });
+    handleServerError(res, "creating the thread", error);
   }
 };
 
-export const editThread = (req, res) => {
+// Uppdatera en tråd
+export const editThread = async (req, res) => {
   const threadId = req.params.threadId;
+  if (!validateThreadId(threadId, res)) return;
+
   const {
     thread_title,
     thread_content,
@@ -102,9 +98,12 @@ export const editThread = (req, res) => {
     thread_timestamp,
     thread_status,
   } = req.body;
+  if (!thread_title || !thread_content || !thread_author) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
 
   try {
-    updateThread(
+    await updateThread(
       threadId,
       thread_title,
       thread_content,
@@ -112,36 +111,43 @@ export const editThread = (req, res) => {
       thread_timestamp,
       thread_status
     );
-    const updatedThread = getThreadById(threadId);
+    const updatedThread = await getThreadById(threadId);
     if (updatedThread) {
       res.json(updatedThread);
     } else {
       res.status(404).json({ message: "Thread not found" });
     }
   } catch (error) {
-    console.error("Error updating thread:", error.message);
-    res
-      .status(500)
-      .json({ message: "An error occurred while updating the thread" });
+    handleServerError(res, "updating the thread", error);
   }
 };
 
+// Radera en tråd
 export const deleteThreadById = async (req, res) => {
-  try {
-    const result = await deleteThread(req.params.threadId); // Kör deleteThread
+  const threadId = req.params.threadId;
+  if (!validateThreadId(threadId, res)) return;
 
+  try {
+    const result = await deleteThread(threadId);
     if (result.error) {
       return res.status(400).json({ message: result.error });
     }
 
-    // Hämta de uppdaterade trådarna efter radering
+    // Hämta alla trådar efter radering
     const threads = await getAllThreads();
-    res.json(threads); // Returnera alla trådar som är kvar efter raderingen
+    res.json(threads);
   } catch (error) {
-    console.error("Error deleting thread:", error.message);
-    res.status(500).json({
-      message: "An error occurred while deleting the thread",
+    handleServerError(res, "deleting the thread", error);
+  }
+};
+
+// Gemensam felhanteringsfunktion
+const handleServerError = (res, action, error) => {
+  console.error(`Error ${action}:`, error.message);
+  res
+    .status(500)
+    .json({
+      message: `An error occurred while ${action}`,
       error: error.message,
     });
-  }
 };

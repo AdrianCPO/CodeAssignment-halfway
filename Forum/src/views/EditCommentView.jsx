@@ -51,7 +51,7 @@ export const EditCommentView = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/api/comments/edit-comment/${commentId}`, // Ändra här!
+        `http://localhost:3000/api/comments/edit-comment/${commentId}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
