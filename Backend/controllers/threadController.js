@@ -1,4 +1,5 @@
 import { handleServerError } from "../utils/handleServerError.js";
+import { getCategoryByName } from "../models/categoryModel.js";
 import {
   getAllThreads,
   getThreadById,
@@ -8,6 +9,7 @@ import {
   searchThreads,
   getThreadSortedByActivity,
   getThreadSortedByComments,
+  getThreadsByCategory,
 } from "../models/threadModel.js";
 
 // Validerar om threadId är ett giltigt nummer
@@ -139,5 +141,33 @@ export const deleteThreadById = async (req, res) => {
     res.json(threads);
   } catch (error) {
     handleServerError(res, "deleting the thread", error);
+  }
+};
+
+export const getThreadsByCategoryController = async (req, res) => {
+  const categoryName = req.params.categoryName;
+  console.log("Fetching threads for category:", categoryName); // För felsökning
+
+  try {
+    // Hämta kategori baserat på namn
+    const category = await getCategoryByName(categoryName);
+
+    if (!category) {
+      return res.status(404).json({ error: "Category not found" });
+    }
+
+    // Hämta trådar för denna kategori
+    const threads = await getThreadsByCategory(categoryName);
+
+    if (!threads || threads.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "No threads found for this category" });
+    }
+
+    res.json(threads); // Skicka tillbaka trådarna
+  } catch (error) {
+    console.error("Error fetching threads by category:", error);
+    res.status(500).json({ error: "Failed to fetch threads by category" });
   }
 };

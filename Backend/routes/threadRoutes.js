@@ -4,6 +4,7 @@ import express from "express";
 import {
   getThreads,
   getThreadByIdController,
+  getThreadsByCategoryController,
   newThread,
   editThread,
   deleteThreadById,
@@ -13,6 +14,7 @@ export const threadRoutes = express.Router();
 
 threadRoutes.get("/", getThreads);
 threadRoutes.get("/:threadId", getThreadByIdController);
+threadRoutes.get("/category/:categoryName", getThreadsByCategoryController);
 threadRoutes.post("/new-thread", newThread);
 threadRoutes.put("/edit-thread/:threadId", editThread);
 threadRoutes.delete("/delete-thread/:threadId", deleteThreadById);

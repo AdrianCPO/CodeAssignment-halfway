@@ -62,17 +62,21 @@ export const getThreadSortedByActivity = () => {
       threads.thread_author,
       threads.thread_timestamp, 
       threads.thread_status,
-      COALESCE(MAX(comments.comment_timestamp), threads.thread_timestamp) AS last_activity
+      -- Hämtar det senaste timestampet från antingen tråden eller kommentarerna
+      MAX(COALESCE(comments.comment_timestamp, threads.thread_timestamp)) AS last_activity
     FROM threads
     LEFT JOIN comments ON threads.thread_id = comments.thread_id
-    GROUP BY threads.thread_id
+    GROUP BY threads.thread_id, threads.thread_title, threads.thread_content, 
+             threads.thread_author, threads.thread_timestamp, threads.thread_status
     ORDER BY last_activity DESC;
   `;
 
   return runQuery(query, [], "Error fetching threads sorted by activity").map(
     thread => ({
       ...thread,
-      last_activity: new Date(thread.last_activity).toISOString(),
+      last_activity: thread.last_activity
+        ? new Date(thread.last_activity).toISOString()
+        : null,
     })
   );
 };
@@ -86,14 +90,67 @@ export const getThreadSortedByComments = () => {
       threads.thread_content,
       threads.thread_author,
       threads.thread_timestamp,
-      COUNT(comments.comment_id) AS comment_count
+      threads.thread_status,
+      COUNT(comments.comment_id) AS comment_count,
+      -- Se till att last_activity alltid finns med här också
+      MAX(COALESCE(comments.comment_timestamp, threads.thread_timestamp)) AS last_activity
     FROM threads
     LEFT JOIN comments ON threads.thread_id = comments.thread_id
-    GROUP BY threads.thread_id
+    GROUP BY threads.thread_id, threads.thread_title, threads.thread_content, 
+             threads.thread_author, threads.thread_timestamp, threads.thread_status
     ORDER BY comment_count DESC;
   `;
 
-  return runQuery(query, [], "Error fetching threads sorted by comments");
+  return runQuery(query, [], "Error fetching threads sorted by comments").map(
+    thread => ({
+      ...thread,
+      last_activity: thread.last_activity
+        ? new Date(thread.last_activity).toISOString()
+        : null,
+    })
+  );
+};
+
+export const getThreadsByCategory = async categoryName => {
+  const query = `
+    SELECT 
+      threads.thread_id,
+      threads.thread_title, 
+      threads.thread_content,
+      threads.thread_author,
+      threads.thread_timestamp, 
+      threads.thread_status,
+      categories.category_name
+    FROM threads
+    JOIN threadsXcategories ON threads.thread_id = threadsXcategories.thread_id
+    JOIN categories ON threadsXcategories.category_id = categories.category_id
+    WHERE categories.category_name = ?  -- Använd parametrisering för kategori
+    ORDER BY threads.thread_timestamp DESC;  -- Förbättrad ordning, sortera efter timestamp
+  `;
+
+  try {
+    // Kör SQL-frågan och returnera resultatet
+    const result = await runQuery(
+      query,
+      [categoryName],
+      "Error fetching threads by category"
+    );
+
+    if (!result || result.length === 0) {
+      console.warn(`No threads found for category: ${categoryName}`);
+      return [];
+    }
+
+    return result.map(thread => ({
+      ...thread,
+      last_activity: thread.last_activity
+        ? new Date(thread.last_activity).toISOString()
+        : null,
+    }));
+  } catch (error) {
+    console.error("Database error in getThreadsByCategory:", error);
+    throw new Error(`Failed to fetch threads by category: ${error.message}`);
+  }
 };
 
 // Hämta en tråd med ID

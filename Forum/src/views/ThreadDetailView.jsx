@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { fetchThreadById } from "../components/apiService";
 import { deleteComment } from "../components/apiServiceComments";
+import { Link } from "react-router-dom";
 
 export const ThreadDetailView = () => {
   const { threadId } = useParams();

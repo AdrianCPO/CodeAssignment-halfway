@@ -3,29 +3,31 @@ import { Link } from "react-router-dom";
 import { useThreadContext } from "../ThreadContextProvider";
 import { SortThreads } from "../components/SortThreads";
 import { SearchBar } from "../components/SearchBar";
+import { CategoryFilter } from "../components/CategoryFilter";
+import { fetchThreads, fetchThreadsByCategory } from "../components/apiService";
 
 export const ThreadView = () => {
   const { threads, setThreads } = useThreadContext();
   const [sortBy, setSortBy] = useState("activity");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchThreads = async () => {
+    const loadThreads = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        const url = searchTerm
-          ? `http://localhost:3000/api/threads?sortBy=${sortBy}&searchTerm=${searchTerm}`
-          : `http://localhost:3000/api/threads?sortBy=${sortBy}`;
-
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch threads: ${response.status}`);
+        let data;
+        if (selectedCategory) {
+          data = await fetchThreadsByCategory(selectedCategory);
+        } else {
+          data = await fetchThreads(sortBy, searchTerm);
         }
-        const data = await response.json();
+
+        console.log("Hämtade trådar:", data); // Debugga API-svaret
         setThreads(data);
       } catch (error) {
         console.error("Error fetching threads:", error);
@@ -35,8 +37,8 @@ export const ThreadView = () => {
       }
     };
 
-    fetchThreads();
-  }, [sortBy, searchTerm, setThreads]);
+    loadThreads();
+  }, [sortBy, searchTerm, selectedCategory, setThreads]);
 
   return (
     <div className="container">
@@ -44,6 +46,7 @@ export const ThreadView = () => {
 
       <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
       <SortThreads setSortBy={setSortBy} />
+      <CategoryFilter onSelectCategory={setSelectedCategory} />
 
       {loading && <p className="loading">Laddar trådar...</p>}
       {error && <p className="error-message">{error}</p>}

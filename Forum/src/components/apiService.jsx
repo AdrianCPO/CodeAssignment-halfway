@@ -113,3 +113,41 @@ export const deleteThread = async threadId => {
     throw error;
   }
 };
+
+export const fetchThreadsByCategory = async categoryName => {
+  try {
+    console.log(`Fetching threads for category: ${categoryName}`); // Debug-logga
+    const response = await fetch(
+      `http://localhost:3000/api/threads/category/${categoryName}`
+    );
+
+    console.log("Raw response:", response); // Logga hela svaret
+
+    if (!response.ok) {
+      throw new Error(
+        `Server returned ${response.status} ${response.statusText}`
+      );
+    }
+
+    const data = await response.json(); // Om det inte är JSON kommer detta orsaka fel
+    console.log("Fetched threads:", data); // Debug-logga
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching threads by category:", error);
+    return []; // Returnera tom array så appen inte kraschar
+  }
+};
+
+// Hämta alla kategorier
+export const fetchCategories = async () => {
+  try {
+    const response = await fetch("http://localhost:3000/api/categories");
+    if (!response.ok) throw new Error("Failed to fetch categories");
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    throw error;
+  }
+};

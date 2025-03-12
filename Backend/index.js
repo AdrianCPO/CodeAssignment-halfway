@@ -1,17 +1,18 @@
-//Huvudfilen för att sätta upp och köra Express-servern samt importera och använda routes.
 import express from "express";
 import cors from "cors";
 import { threadRoutes } from "./routes/threadRoutes.js";
 import { commentRoutes } from "./routes/commentRoutes.js";
+import { categoryRoutes } from "./routes/categoryRoutes.js";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// Använd threadRoutes
+// Använd routes
 app.use("/api/threads", threadRoutes);
 app.use("/api/comments", commentRoutes);
+app.use("/api/categories", categoryRoutes);
 
 // Global felhantering
 app.use((err, req, res, next) => {

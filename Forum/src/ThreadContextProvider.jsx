@@ -7,7 +7,7 @@ export const useThreadContext = () => {
 };
 
 export const ThreadContextProvider = ({ children }) => {
-  const [threads, setThreads] = useState([]); // Initialisera som tom array
+  const [threads, setThreads] = useState([]); 
 
   return (
     <ThreadContext.Provider value={{ threads, setThreads }}>
