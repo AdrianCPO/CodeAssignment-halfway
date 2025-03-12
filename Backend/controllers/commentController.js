@@ -1,3 +1,5 @@
+//hantera logiken för inkommande HTTP-förfrågningar och skicka rätt svar tillbaka till klienten
+
 import { db } from "../config/database.js";
 import { handleServerError } from "../utils/handleServerError.js";
 import {

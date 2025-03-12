@@ -1,8 +1,14 @@
 export const fetchThreads = async (sortBy, searchTerm) => {
   try {
+    {
+      /* Skapar URL med sorteringsparameter och eventuellt söktermen */
+    }
     let url = `http://localhost:3000/api/threads?sortBy=${sortBy}`;
     if (searchTerm) url += `&searchTerm=${searchTerm}`;
 
+    {
+      /* Hämtar trådar från API:t */
+    }
     const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch threads");
 
@@ -15,6 +21,9 @@ export const fetchThreads = async (sortBy, searchTerm) => {
 
 export const fetchThreadById = async threadId => {
   try {
+    {
+      /* Hämtar en specifik tråd med dess ID */
+    }
     const response = await fetch(
       `http://localhost:3000/api/threads/${threadId}`
     );
@@ -28,6 +37,9 @@ export const fetchThreadById = async threadId => {
 
 export const createThread = async newThread => {
   try {
+    {
+      /* Skickar en POST-begäran för att skapa en ny tråd */
+    }
     const response = await fetch(
       "http://localhost:3000/api/threads/new-thread",
       {
@@ -43,8 +55,12 @@ export const createThread = async newThread => {
     throw error;
   }
 };
+
 export const updateThread = async () => {
   try {
+    {
+      /* Hämtar alla trådar, troligen för att uppdatera frontend-data */
+    }
     const response = await fetch("http://localhost:3000/api/threads");
     if (!response.ok) {
       throw new Error("Failed to fetch threads");
@@ -53,15 +69,19 @@ export const updateThread = async () => {
     return data;
   } catch (error) {
     console.error(error);
-    return []; // Returnera en tom array om något går fel
+    return []; // Returnerar en tom array om något går fel
   }
 };
+
 export const updateThreadById = async (threadId, updatedThread) => {
   try {
+    {
+      /* Skickar en PUT-begäran för att uppdatera en tråd med ett specifikt ID */
+    }
     const response = await fetch(
-      `http://localhost:3000/api/threads/edit-thread/${threadId}`, // Se till att din backend stödjer denna route
+      `http://localhost:3000/api/threads/edit-thread/${threadId}`,
       {
-        method: "PUT", // Eller "PATCH" om du vill uppdatera endast vissa fält
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
@@ -78,6 +98,9 @@ export const updateThreadById = async (threadId, updatedThread) => {
 
 export const deleteThread = async threadId => {
   try {
+    {
+      /* Skickar en DELETE-begäran för att radera en tråd */
+    }
     const response = await fetch(
       `http://localhost:3000/api/threads/delete-thread/${threadId}`,
       {

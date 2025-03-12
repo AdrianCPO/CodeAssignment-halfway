@@ -1,0 +1,33 @@
+.navbar {
+  background-color: var(--primary-color);
+  padding: 15px;
+  display: flex;
+  justify-content: center;
+  max-width: 800px; /* Samma maxbredd som .container */
+  margin: auto;
+}
+
+.navbar-links {
+  display: flex;
+}
+
+.navbar-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+}
+
+.navbar-item {
+  margin: 0 15px;
+}
+
+.navbar-item a {
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+}
+
+.navbar-item a:hover {
+  color: var(--hover-color);
+}

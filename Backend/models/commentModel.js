@@ -1,6 +1,7 @@
+//definierar datamodeller och hantera interaktioner med databasen
+
 import { db } from "../config/database.js";
 
-// Funktion för att köra SQL-frågor med parametrar och bättre felhantering
 const runQuery = (query, params = [], errorMessage) => {
   try {
     const stmt = db.prepare(query);

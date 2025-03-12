@@ -1,9 +1,8 @@
 //Huvudfilen för att sätta upp och köra Express-servern samt importera och använda routes.
-// index.js
 import express from "express";
 import cors from "cors";
-import threadRoutes from "./routes/threadRoutes.js";
-import commentRoutes from "./routes/commentRoutes.js";
+import { threadRoutes } from "./routes/threadRoutes.js";
+import { commentRoutes } from "./routes/commentRoutes.js";
 
 const app = express();
 

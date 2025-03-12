@@ -8,18 +8,18 @@ import {
   deleteCommentById,
 } from "../controllers/commentController.js";
 
-const router = express.Router();
+export const commentRoutes = express.Router();
 
-router.get("/", getComments);
-router.get("/comment/:id", getCommentById);
-router.get("/:threadId", getCommentsByThreadIdController);
-router.post("/:threadId/new-comment", newComment);
-router.put("/edit-comment/:id", editComment);
-router.delete("/delete-comment/:id", deleteCommentById);
+commentRoutes.get("/", getComments);
+commentRoutes.get("/comment/:id", getCommentById);
+commentRoutes.get("/:threadId", getCommentsByThreadIdController);
+commentRoutes.post("/:threadId/new-comment", newComment);
+commentRoutes.put("/edit-comment/:id", editComment);
+commentRoutes.delete("/delete-comment/:id", deleteCommentById);
 
 // Hantera 404 för ogiltiga rutter
-router.use((req, res) => {
+commentRoutes.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
 
-export default router;
+

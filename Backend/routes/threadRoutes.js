@@ -1,6 +1,5 @@
-//Denna mapp definierar alla dina API-rutter och kopplar dem till controller-funktioner.
-//Exempel: blogRoutes.js som innehåller alla routes för blogginlägg, t.ex. GET, POST, PUT, DELETE.
-// /routes/blogRoutes.js
+//Denna mapp definierar alla mina API-rutter och kopplar dem till controller-funktioner.
+
 import express from "express";
 import {
   getThreads,
@@ -10,17 +9,15 @@ import {
   deleteThreadById,
 } from "../controllers/threadController.js";
 
-const router = express.Router();
+export const threadRoutes = express.Router();
 
-router.get("/", getThreads);
-router.get("/:threadId", getThreadByIdController);
-router.post("/new-thread", newThread);
-router.put("/edit-thread/:threadId", editThread);
-router.delete("/delete-thread/:threadId", deleteThreadById);
+threadRoutes.get("/", getThreads);
+threadRoutes.get("/:threadId", getThreadByIdController);
+threadRoutes.post("/new-thread", newThread);
+threadRoutes.put("/edit-thread/:threadId", editThread);
+threadRoutes.delete("/delete-thread/:threadId", deleteThreadById);
 
 // Hantera 404 för ogiltiga rutter
-router.use((req, res) => {
+threadRoutes.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
-
-export default router;

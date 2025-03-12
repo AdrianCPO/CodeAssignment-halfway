@@ -1,4 +1,4 @@
-// components/SortThreads.js
+
 import { useState } from "react";
 
 export const SortThreads = ({ setSortBy }) => {
@@ -6,7 +6,7 @@ export const SortThreads = ({ setSortBy }) => {
 
   const handleSortChange = event => {
     setSelectedSort(event.target.value);
-    setSortBy(event.target.value); // Skickar sorteringsvalet till parent-komponenten
+    setSortBy(event.target.value); 
   };
 
   return (
