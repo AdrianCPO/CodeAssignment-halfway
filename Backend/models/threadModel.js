@@ -11,18 +11,13 @@ const runQuery = (query, params = [], errorMessage) => {
   }
 };
 
-// Hämta alla trådar, sorterade efter senaste aktivitet
-export const getAllThreads = () => {
-  return runQuery(
-    "SELECT * FROM threads ORDER BY thread_timestamp DESC",
-    [],
-    "Error fetching threads from database"
-  );
-};
-
-// Sök trådar efter titel, innehåll eller författare
-export const searchThreads = searchTerm => {
-  const query = `
+// Dynamisk funktion som hanterar sökning, kategori och sortering
+export const getFilteredSortedThreads = ({
+  searchTerm,
+  category,
+  sortBy,
+} = {}) => {
+  let query = `
     SELECT 
       threads.thread_id,
       threads.thread_title, 
@@ -34,145 +29,91 @@ export const searchThreads = searchTerm => {
       COALESCE(MAX(comments.comment_timestamp), threads.thread_timestamp) AS last_activity
     FROM threads
     LEFT JOIN comments ON threads.thread_id = comments.thread_id
-    WHERE 
-      LOWER(threads.thread_title) LIKE LOWER(?) OR 
-      LOWER(threads.thread_content) LIKE LOWER(?) OR
-      LOWER(threads.thread_author) LIKE LOWER(?)
-    GROUP BY threads.thread_id
-    ORDER BY last_activity DESC;
   `;
+  const params = [];
+  const conditions = [];
 
-  return runQuery(
-    query,
-    [`%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`],
-    "Error searching threads"
-  ).map(thread => ({
+  if (category) {
+    // Om category inte redan är en array, gör den till en
+    const categoryArr = Array.isArray(category) ? category : [category];
+    query += `
+      JOIN threadsXcategories ON threads.thread_id = threadsXcategories.thread_id
+      JOIN categories ON threadsXcategories.category_id = categories.category_id
+    `;
+    const placeholders = categoryArr.map(() => "?").join(", ");
+    conditions.push(`LOWER(categories.category_name) IN (${placeholders})`);
+    params.push(...categoryArr.map(cat => cat.toLowerCase()));
+  }
+
+  if (searchTerm) {
+    conditions.push(`(LOWER(threads.thread_title) LIKE LOWER(?) OR 
+       LOWER(threads.thread_content) LIKE LOWER(?) OR 
+       LOWER(threads.thread_author) LIKE LOWER(?))`);
+    const searchPattern = `%${searchTerm}%`;
+    params.push(searchPattern, searchPattern, searchPattern);
+  }
+
+  if (conditions.length > 0) {
+    query += " WHERE " + conditions.join(" AND ");
+  }
+
+  query += " GROUP BY threads.thread_id ";
+
+  let orderBy = "last_activity";
+  if (sortBy === "comments") {
+    orderBy = "comment_count";
+  } else if (sortBy === "activity") {
+    orderBy = "last_activity";
+  }
+  if (orderBy === "last_activity") {
+    query += " ORDER BY datetime(last_activity) DESC";
+  } else {
+    query += ` ORDER BY ${orderBy} DESC`;
+  }
+
+  return runQuery(query, params, "Error fetching threads").map(thread => ({
     ...thread,
     last_activity: new Date(thread.last_activity).toISOString(),
   }));
 };
 
-// Hämta trådar sorterade efter aktivitet
-export const getThreadSortedByActivity = () => {
-  const query = `
-    SELECT 
-      threads.thread_id,
-      threads.thread_title, 
-      threads.thread_content,
-      threads.thread_author,
-      threads.thread_timestamp, 
-      threads.thread_status,
-      -- Hämtar det senaste timestampet från antingen tråden eller kommentarerna
-      MAX(COALESCE(comments.comment_timestamp, threads.thread_timestamp)) AS last_activity
-    FROM threads
-    LEFT JOIN comments ON threads.thread_id = comments.thread_id
-    GROUP BY threads.thread_id, threads.thread_title, threads.thread_content, 
-             threads.thread_author, threads.thread_timestamp, threads.thread_status
-    ORDER BY last_activity DESC;
-  `;
-
-  return runQuery(query, [], "Error fetching threads sorted by activity").map(
-    thread => ({
-      ...thread,
-      last_activity: thread.last_activity
-        ? new Date(thread.last_activity).toISOString()
-        : null,
-    })
-  );
+// Hämta alla trådar (utan filter eller sökterm)
+export const getAllThreads = () => {
+  return getFilteredSortedThreads();
 };
 
-// Hämta trådar sorterade efter antal kommentarer
-export const getThreadSortedByComments = () => {
-  const query = `
-    SELECT
-      threads.thread_id,
-      threads.thread_title,
-      threads.thread_content,
-      threads.thread_author,
-      threads.thread_timestamp,
-      threads.thread_status,
-      COUNT(comments.comment_id) AS comment_count,
-      -- Se till att last_activity alltid finns med här också
-      MAX(COALESCE(comments.comment_timestamp, threads.thread_timestamp)) AS last_activity
-    FROM threads
-    LEFT JOIN comments ON threads.thread_id = comments.thread_id
-    GROUP BY threads.thread_id, threads.thread_title, threads.thread_content, 
-             threads.thread_author, threads.thread_timestamp, threads.thread_status
-    ORDER BY comment_count DESC;
-  `;
-
-  return runQuery(query, [], "Error fetching threads sorted by comments").map(
-    thread => ({
-      ...thread,
-      last_activity: thread.last_activity
-        ? new Date(thread.last_activity).toISOString()
-        : null,
-    })
-  );
-};
-
-export const getThreadsByCategory = async categoryName => {
-  const query = `
-    SELECT 
-      threads.thread_id,
-      threads.thread_title, 
-      threads.thread_content,
-      threads.thread_author,
-      threads.thread_timestamp, 
-      threads.thread_status,
-      categories.category_name
-    FROM threads
-    JOIN threadsXcategories ON threads.thread_id = threadsXcategories.thread_id
-    JOIN categories ON threadsXcategories.category_id = categories.category_id
-    WHERE categories.category_name = ?  -- Använd parametrisering för kategori
-    ORDER BY threads.thread_timestamp DESC;  -- Förbättrad ordning, sortera efter timestamp
-  `;
-
-  try {
-    // Kör SQL-frågan och returnera resultatet
-    const result = await runQuery(
-      query,
-      [categoryName],
-      "Error fetching threads by category"
-    );
-
-    if (!result || result.length === 0) {
-      console.warn(`No threads found for category: ${categoryName}`);
-      return [];
-    }
-
-    return result.map(thread => ({
-      ...thread,
-      last_activity: thread.last_activity
-        ? new Date(thread.last_activity).toISOString()
-        : null,
-    }));
-  } catch (error) {
-    console.error("Database error in getThreadsByCategory:", error);
-    throw new Error(`Failed to fetch threads by category: ${error.message}`);
-  }
-};
-
-// Hämta en tråd med ID
+// Hämta en enskild tråd med dess data och en array med tillhörande kategori-ID:n
 export const getThreadById = threadId => {
   if (!threadId || isNaN(threadId)) throw new Error("Invalid thread ID");
 
   try {
     const stmt = db.prepare("SELECT * FROM threads WHERE thread_id = ?");
-    return stmt.get(threadId);
+    const thread = stmt.get(threadId);
+
+    if (thread) {
+      const stmtCat = db.prepare(
+        "SELECT category_id FROM threadsXcategories WHERE thread_id = ?"
+      );
+      const catRows = stmtCat.all(threadId);
+      thread.category_ids = catRows.map(row => row.category_id);
+    }
+
+    return thread;
   } catch (error) {
     console.error("Error fetching thread from database:", error.message);
     throw new Error("Error fetching thread from database");
   }
 };
 
-// Skapa en ny tråd
-export const createThread = (
+// Skapa en ny tråd med stöd för kategori (en kategori per tråd)
+// Förväntar sig att du skickar in en array med kategori-ID:n
+export const createThread = async (
   thread_title,
   thread_content,
   thread_author,
   thread_timestamp,
-  thread_status
+  thread_status,
+  category_ids
 ) => {
   if (!thread_title || !thread_content || !thread_author) {
     throw new Error("Missing required fields for creating thread");
@@ -182,27 +123,41 @@ export const createThread = (
     const stmt = db.prepare(
       "INSERT INTO threads (thread_title, thread_content, thread_author, thread_timestamp, thread_status) VALUES (?, ?, ?, ?, ?)"
     );
-    stmt.run(
+    const result = stmt.run(
       thread_title,
       thread_content,
       thread_author,
       thread_timestamp,
       thread_status
     );
+    const threadId = result.lastInsertRowid;
+
+    if (Array.isArray(category_ids) && category_ids.length > 0) {
+      const insertStmt = db.prepare(
+        "INSERT INTO threadsXcategories (thread_id, category_id) VALUES (?, ?)"
+      );
+      for (const catId of category_ids) {
+        insertStmt.run(threadId, catId);
+      }
+    }
+
+    return threadId;
   } catch (error) {
     console.error("Error inserting thread into database:", error.message);
     throw new Error("Error inserting thread into database");
   }
 };
 
-// Uppdatera en tråd
+// Uppdatera en befintlig tråd med stöd för att ändra kategorier
+// Förväntar sig att category_ids är en array med nya kategori-ID:n
 export const updateThread = (
   threadId,
   thread_title,
   thread_content,
   thread_author,
   thread_timestamp,
-  thread_status
+  thread_status,
+  category_ids
 ) => {
   if (
     !threadId ||
@@ -230,21 +185,37 @@ export const updateThread = (
     if (result.changes === 0) {
       throw new Error("No thread was updated. Maybe the thread doesn't exist.");
     }
+
+    // Ta bort alla befintliga relationer för tråden
+    db.prepare("DELETE FROM threadsXcategories WHERE thread_id = ?").run(
+      threadId
+    );
+
+    // Infoga nya relationer baserat på den skickade arrayen
+    if (Array.isArray(category_ids) && category_ids.length > 0) {
+      const insertStmt = db.prepare(
+        "INSERT INTO threadsXcategories (thread_id, category_id) VALUES (?, ?)"
+      );
+      for (const catId of category_ids) {
+        insertStmt.run(threadId, catId);
+      }
+    }
   } catch (error) {
     console.error("Error updating thread in database:", error.message);
     throw new Error("Error updating thread in database");
   }
 };
 
-// Radera en tråd och dess kommentarer
+// Radera en tråd och alla kopplade kommentarer samt kategori-relationer
 export const deleteThread = threadId => {
   if (!threadId || isNaN(threadId)) throw new Error("Invalid thread ID");
 
   try {
-    // Ta bort alla kommentarer kopplade till tråden
     db.prepare("DELETE FROM comments WHERE thread_id = ?").run(threadId);
+    db.prepare("DELETE FROM threadsXcategories WHERE thread_id = ?").run(
+      threadId
+    );
 
-    // Ta bort själva tråden
     const deleteThreadStmt = db.prepare(
       "DELETE FROM threads WHERE thread_id = ?"
     );

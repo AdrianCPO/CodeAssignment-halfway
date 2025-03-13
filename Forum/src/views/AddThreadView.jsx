@@ -2,12 +2,14 @@ import { useState } from "react";
 import { useThreadContext } from "../ThreadContextProvider";
 import { ThreadInput } from "../components/ThreadInput";
 import { fetchThreads, createThread } from "../components/apiService";
+import { CategorySelect } from "../components/CategorySelect";
 
 export const AddThreadView = () => {
   const [threadTitle, setThreadTitle] = useState("");
   const [threadContent, setThreadContent] = useState("");
   const [threadAuthor, setThreadAuthor] = useState("");
-  const [threadStatus, setThreadStatus] = useState("open"); // default status
+  const [threadStatus, setThreadStatus] = useState("open");
+  const [categoryIds, setCategoryIds] = useState([]); // Nu en array
   const { setThreads } = useThreadContext();
 
   const handleSubmit = async e => {
@@ -20,6 +22,7 @@ export const AddThreadView = () => {
       thread_author: threadAuthor,
       thread_timestamp: threadTimestamp,
       thread_status: threadStatus,
+      category_ids: categoryIds, // Skickar med en array med kategori-ID:n
     };
 
     try {
@@ -57,7 +60,10 @@ export const AddThreadView = () => {
           placeholder="Ange ditt namn"
         />
 
-        {/* Här använder vi en select dropdown istället för ett textfält */}
+        {/* Multi-select för att välja flera kategorier */}
+
+        <CategorySelect value={categoryIds} onChange={setCategoryIds} />
+
         <label>Status</label>
         <select
           value={threadStatus}

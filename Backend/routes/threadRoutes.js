@@ -1,5 +1,3 @@
-//Denna mapp definierar alla mina API-rutter och kopplar dem till controller-funktioner.
-
 import express from "express";
 import {
   getThreads,
@@ -13,8 +11,9 @@ import {
 export const threadRoutes = express.Router();
 
 threadRoutes.get("/", getThreads);
-threadRoutes.get("/:threadId", getThreadByIdController);
 threadRoutes.get("/category/:categoryName", getThreadsByCategoryController);
+threadRoutes.get("/:threadId", getThreadByIdController);
+
 threadRoutes.post("/new-thread", newThread);
 threadRoutes.put("/edit-thread/:threadId", editThread);
 threadRoutes.delete("/delete-thread/:threadId", deleteThreadById);

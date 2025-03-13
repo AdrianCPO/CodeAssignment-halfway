@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { ThreadInput } from "../components/ThreadInput";
 import { fetchThreads, updateThreadById } from "../components/apiService";
+import { CategorySelect } from "../components/CategorySelect";
 
 export const EditThreadView = () => {
   const [title, setTitle] = useState("");
@@ -9,6 +10,7 @@ export const EditThreadView = () => {
   const [timestamp, setTimestamp] = useState(new Date().toISOString());
   const [status, setStatus] = useState("open"); // Standardvärde
   const [threadId, setThreadId] = useState("");
+  const [categoryIds, setCategoryIds] = useState([]); // Ny state för flera kategorier
   const [threads, setThreads] = useState([]);
 
   useEffect(() => {
@@ -32,6 +34,7 @@ export const EditThreadView = () => {
       thread_author: author,
       thread_timestamp: timestamp,
       thread_status: status,
+      category_ids: categoryIds, // Skickar med array med kategori-ID:n
     };
 
     try {
@@ -39,7 +42,6 @@ export const EditThreadView = () => {
         threadId,
         updatedThread
       );
-
       if (updatedThreadResponse) {
         setThreads(prevThreads =>
           prevThreads.map(thread =>
@@ -67,6 +69,8 @@ export const EditThreadView = () => {
       setTimestamp(new Date(selectedThread.thread_timestamp).toISOString());
       setStatus(selectedThread.thread_status);
       setThreadId(selectedThread.thread_id);
+      // Förutsätter att API:et returnerar en array med kategori-ID:n
+      setCategoryIds(selectedThread.category_ids || []);
     }
   };
 
@@ -108,6 +112,11 @@ export const EditThreadView = () => {
           onChange={setAuthor}
           placeholder="Ange författarnamn"
         />
+
+        {/* Multi-select för att välja flera kategorier */}
+        <label>Redigera Kategori(er)</label>
+        <CategorySelect value={categoryIds} onChange={setCategoryIds} />
+
         <ThreadInput
           label="Datum"
           value={timestamp}
@@ -115,7 +124,6 @@ export const EditThreadView = () => {
           placeholder="Ange datum"
         />
 
-        {/* Dropdown för status istället för ett textfält */}
         <label>Status</label>
         <select
           value={status}

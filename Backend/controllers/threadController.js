@@ -1,18 +1,13 @@
 import { handleServerError } from "../utils/handleServerError.js";
-import { getCategoryByName } from "../models/categoryModel.js";
 import {
-  getAllThreads,
+  getFilteredSortedThreads,
   getThreadById,
   createThread,
   updateThread,
   deleteThread,
-  searchThreads,
-  getThreadSortedByActivity,
-  getThreadSortedByComments,
-  getThreadsByCategory,
 } from "../models/threadModel.js";
 
-// Validerar om threadId är ett giltigt nummer
+// Validera om threadId är ett giltigt nummer
 const validateThreadId = (threadId, res) => {
   if (!threadId || isNaN(threadId)) {
     res.status(400).json({ message: "Invalid thread ID format" });
@@ -21,23 +16,24 @@ const validateThreadId = (threadId, res) => {
   return true;
 };
 
-// Hämta alla trådar med sortering eller sökning
+// Hämta trådar med sökning, kategori och sortering
 export const getThreads = async (req, res) => {
-  const { sortBy, searchTerm } = req.query;
-  console.log("Sorting by:", sortBy, "Search term:", searchTerm);
+  const { searchTerm, category, sortBy } = req.query;
+  console.log(
+    "Sökterm:",
+    searchTerm,
+    "Kategori:",
+    category,
+    "Sortering:",
+    sortBy
+  );
 
   try {
-    let threads;
-    if (searchTerm) {
-      threads = await searchThreads(searchTerm);
-    } else if (sortBy === "activity") {
-      threads = await getThreadSortedByActivity();
-    } else if (sortBy === "comments") {
-      threads = await getThreadSortedByComments();
-    } else {
-      threads = await getAllThreads();
-    }
-
+    const threads = await getFilteredSortedThreads({
+      searchTerm,
+      category,
+      sortBy,
+    });
     res.json(threads);
   } catch (error) {
     handleServerError(res, "fetching threads", error);
@@ -61,7 +57,8 @@ export const getThreadByIdController = async (req, res) => {
   }
 };
 
-// Skapa en ny tråd
+// Skapa en ny tråd med möjlighet att sätta kategori
+// Ändrad: förväntar sig nu att klienten skickar med category_ids (en array med kategori-ID:n)
 export const newThread = async (req, res) => {
   const {
     thread_title,
@@ -69,6 +66,7 @@ export const newThread = async (req, res) => {
     thread_author,
     thread_timestamp,
     thread_status,
+    category_ids, // Förväntas vara ett enskilt värde eller en array med kategori-ID:n
   } = req.body;
 
   if (!thread_title || !thread_content || !thread_author) {
@@ -76,20 +74,27 @@ export const newThread = async (req, res) => {
   }
 
   try {
-    await createThread(
+    // Säkerställ att category_ids alltid är en array om den skickas med
+    const categories = category_ids
+      ? Array.isArray(category_ids)
+        ? category_ids
+        : [category_ids]
+      : [];
+    const threadId = await createThread(
       thread_title,
       thread_content,
       thread_author,
       thread_timestamp,
-      thread_status
+      thread_status,
+      categories // Skickar en array med kategori-ID:n
     );
-    res.status(201).json({ message: "Thread created successfully" });
+    res.status(201).json({ message: "Thread created successfully", threadId });
   } catch (error) {
     handleServerError(res, "creating the thread", error);
   }
 };
 
-// Uppdatera en tråd
+// Uppdatera en tråd med möjlighet att ändra kategori
 export const editThread = async (req, res) => {
   const threadId = req.params.threadId;
   if (!validateThreadId(threadId, res)) return;
@@ -100,7 +105,16 @@ export const editThread = async (req, res) => {
     thread_author,
     thread_timestamp,
     thread_status,
+    category_ids, // Ändrad: ta emot category_ids istället för category_id
   } = req.body;
+
+  // Säkerställ att category_ids hanteras som en array
+  const categories = category_ids
+    ? Array.isArray(category_ids)
+      ? category_ids
+      : [category_ids]
+    : [];
+
   if (!thread_title || !thread_content || !thread_author) {
     return res.status(400).json({ message: "Missing required fields" });
   }
@@ -112,7 +126,8 @@ export const editThread = async (req, res) => {
       thread_content,
       thread_author,
       thread_timestamp,
-      thread_status
+      thread_status,
+      categories
     );
     const updatedThread = await getThreadById(threadId);
     if (updatedThread) {
@@ -136,36 +151,27 @@ export const deleteThreadById = async (req, res) => {
       return res.status(400).json({ message: result.error });
     }
 
-    // Hämta alla trådar efter radering
-    const threads = await getAllThreads();
+    // Efter radering hämtar vi alla trådar (utan filter)
+    const threads = await getFilteredSortedThreads({});
     res.json(threads);
   } catch (error) {
     handleServerError(res, "deleting the thread", error);
   }
 };
 
+// Hämta trådar baserat på kategori (använder i så fall det dynamiska filtret)
 export const getThreadsByCategoryController = async (req, res) => {
   const categoryName = req.params.categoryName;
-  console.log("Fetching threads for category:", categoryName); // För felsökning
+  console.log("Fetching threads for category:", categoryName);
 
   try {
-    // Hämta kategori baserat på namn
-    const category = await getCategoryByName(categoryName);
-
-    if (!category) {
-      return res.status(404).json({ error: "Category not found" });
-    }
-
-    // Hämta trådar för denna kategori
-    const threads = await getThreadsByCategory(categoryName);
-
+    const threads = await getFilteredSortedThreads({ category: categoryName });
     if (!threads || threads.length === 0) {
       return res
         .status(404)
         .json({ error: "No threads found for this category" });
     }
-
-    res.json(threads); // Skicka tillbaka trådarna
+    res.json(threads);
   } catch (error) {
     console.error("Error fetching threads by category:", error);
     res.status(500).json({ error: "Failed to fetch threads by category" });

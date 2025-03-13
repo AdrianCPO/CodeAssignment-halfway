@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchCategories } from "../components/apiService";
+import { fetchCategories } from "../components/apiServiceCategories";
 
 export const CategoryFilter = ({ onSelectCategory }) => {
   const [categories, setCategories] = useState([]);
@@ -13,13 +13,12 @@ export const CategoryFilter = ({ onSelectCategory }) => {
         console.error("Failed to fetch categories:", error);
       }
     };
-
     loadCategories();
   }, []);
 
   return (
     <div>
-      <label htmlFor="filter-label">Filtrera efter kategori: </label>
+      <label htmlFor="filter-select">Filtrera efter kategori: </label>
       <select onChange={e => onSelectCategory(e.target.value)}>
         <option value="">Alla kategorier</option>
         {categories.map(category => (
