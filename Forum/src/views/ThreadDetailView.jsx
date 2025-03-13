@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { fetchThreadById } from "../components/apiService";
 import { deleteComment } from "../components/apiServiceComments";
-import { Link } from "react-router-dom";
+import { fetchCategories } from "../components/apiServiceCategories";
 
 export const ThreadDetailView = () => {
   const { threadId } = useParams();
   const [thread, setThread] = useState(null);
   const [comments, setComments] = useState([]);
+  const [threadCategories, setThreadCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showComments, setShowComments] = useState(false);
@@ -27,7 +28,7 @@ export const ThreadDetailView = () => {
   }, [threadId]);
 
   useEffect(() => {
-    const fetchComments = async () => {
+    const fetchThreadComments = async () => {
       try {
         const response = await fetch(
           `http://localhost:3000/api/comments/${threadId}`
@@ -47,8 +48,28 @@ export const ThreadDetailView = () => {
         setComments([]);
       }
     };
-    fetchComments();
+    fetchThreadComments();
   }, [threadId]);
+
+  // Ny useEffect: Hämta alla kategorier och filtrera ut de som matchar trådens kategori-ID:n
+  useEffect(() => {
+    const fetchThreadCategories = async () => {
+      if (thread && thread.category_ids && thread.category_ids.length > 0) {
+        try {
+          const allCategories = await fetchCategories();
+          const filteredCategories = allCategories.filter(cat =>
+            thread.category_ids.includes(cat.category_id)
+          );
+          setThreadCategories(filteredCategories);
+        } catch (error) {
+          console.error("Error fetching categories for thread:", error);
+        }
+      } else {
+        setThreadCategories([]);
+      }
+    };
+    fetchThreadCategories();
+  }, [thread]);
 
   const handleDeleteComment = async commentId => {
     try {
@@ -74,6 +95,14 @@ export const ThreadDetailView = () => {
       <p>
         Status: {thread.thread_status === "closed" ? "🔒 Stängd" : "✅ Öppen"}
       </p>
+
+      {/* Visa kategori(er) om de finns */}
+      {threadCategories.length > 0 && (
+        <p>
+          Kategorier:{" "}
+          {threadCategories.map(cat => cat.category_name).join(", ")}
+        </p>
+      )}
 
       <p>Antal kommentarer: {comments.length}</p>
 

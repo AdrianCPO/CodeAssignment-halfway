@@ -28,6 +28,8 @@ export const AddThreadView = () => {
     try {
       const addedThread = await createThread(newThread);
       if (addedThread) {
+        // Visa en alert när tråden har skapats
+        alert("Tråden har skapats!");
         const updatedThreads = await fetchThreads();
         setThreads(updatedThreads);
       }
@@ -61,7 +63,6 @@ export const AddThreadView = () => {
         />
 
         {/* Multi-select för att välja flera kategorier */}
-
         <CategorySelect value={categoryIds} onChange={setCategoryIds} />
 
         <label>Status</label>

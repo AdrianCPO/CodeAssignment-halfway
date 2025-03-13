@@ -38,11 +38,11 @@ export const EditThreadView = () => {
     };
 
     try {
-      const updatedThreadResponse = await updateThreadById(
-        threadId,
-        updatedThread
-      );
+      const updatedThreadResponse = await updateThreadById(threadId, updatedThread);
       if (updatedThreadResponse) {
+        // Visa en alert när tråden har uppdaterats
+        alert("Tråden har uppdaterats!");
+
         setThreads(prevThreads =>
           prevThreads.map(thread =>
             thread.thread_id === updatedThreadResponse.thread_id

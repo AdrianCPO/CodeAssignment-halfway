@@ -38,6 +38,8 @@ export const AddCommentView = () => {
     try {
       const addedComment = await createComment(threadId, commentData);
       setComments([...comments, addedComment]);
+      // Visa en alert när kommentaren har skapats
+      alert("Kommentaren har skapats!");
       setComment("");
       setAuthor("");
     } catch (error) {

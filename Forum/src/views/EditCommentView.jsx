@@ -81,6 +81,8 @@ export const EditCommentView = () => {
             : comment
         )
       );
+
+      // Alert när kommentaren har uppdaterats
       alert("Kommentar uppdaterad!");
     } catch (error) {
       console.error("Fel vid uppdatering av kommentar:", error);

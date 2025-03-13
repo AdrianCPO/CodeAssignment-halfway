@@ -9,6 +9,9 @@ export const DeleteCommentView = ({ comments, setComments }) => {
       setComments(prevComments =>
         prevComments.filter(comment => comment.comment_id !== id)
       );
+
+      // Visa en alert när kommentaren har tagits bort
+      alert("Kommentaren har tagits bort!");
     } catch (error) {
       console.error("Error deleting comment:", error);
     }
