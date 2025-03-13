@@ -34,7 +34,6 @@ export const getFilteredSortedThreads = ({
   const conditions = [];
 
   if (category) {
-    // Om category inte redan är en array, gör den till en
     const categoryArr = Array.isArray(category) ? category : [category];
     query += `
       JOIN threadsXcategories ON threads.thread_id = threadsXcategories.thread_id
@@ -65,8 +64,9 @@ export const getFilteredSortedThreads = ({
   } else if (sortBy === "activity") {
     orderBy = "last_activity";
   }
+  // Ändra från att använda datetime(last_activity) till att sortera direkt på last_activity
   if (orderBy === "last_activity") {
-    query += " ORDER BY datetime(last_activity) DESC";
+    query += " ORDER BY last_activity DESC";
   } else {
     query += ` ORDER BY ${orderBy} DESC`;
   }

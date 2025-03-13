@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { ThreadInput } from "../components/ThreadInput";
-import { fetchThreads, updateThreadById } from "../components/apiService";
+import {
+  fetchThreads,
+  fetchThreadById,
+  updateThreadById,
+} from "../components/apiService";
 import { CategorySelect } from "../components/CategorySelect";
 
 export const EditThreadView = () => {
@@ -10,9 +14,10 @@ export const EditThreadView = () => {
   const [timestamp, setTimestamp] = useState(new Date().toISOString());
   const [status, setStatus] = useState("open"); // Standardvärde
   const [threadId, setThreadId] = useState("");
-  const [categoryIds, setCategoryIds] = useState([]); // Ny state för flera kategorier
+  const [categoryIds, setCategoryIds] = useState([]); // State för valda kategori-ID:n
   const [threads, setThreads] = useState([]);
 
+  // Hämta listan över trådar (utan fullständig data)
   useEffect(() => {
     const loadThreads = async () => {
       try {
@@ -24,6 +29,38 @@ export const EditThreadView = () => {
     };
     loadThreads();
   }, []);
+
+  // När en tråd väljs hämtar vi fullständig data med fetchThreadById
+  const handleSelectChange = async e => {
+    const selectedThreadId = e.target.value;
+    setThreadId(selectedThreadId);
+
+    if (selectedThreadId) {
+      try {
+        const selectedThread = await fetchThreadById(selectedThreadId);
+        setTitle(selectedThread.thread_title);
+        setContent(selectedThread.thread_content);
+        setAuthor(selectedThread.thread_author);
+        setTimestamp(new Date(selectedThread.thread_timestamp).toISOString());
+        setStatus(selectedThread.thread_status);
+        // Sätt kategori-arrayen – se till att eventuella strängvärden konverteras till nummer
+        const normalizedCategories = selectedThread.category_ids
+          ? selectedThread.category_ids.map(id => Number(id))
+          : [];
+        setCategoryIds(normalizedCategories);
+      } catch (error) {
+        console.error("Failed to fetch thread details:", error);
+      }
+    } else {
+      // Om inget tråd-ID är valt, nollställ fälten
+      setTitle("");
+      setContent("");
+      setAuthor("");
+      setTimestamp(new Date().toISOString());
+      setStatus("open");
+      setCategoryIds([]);
+    }
+  };
 
   const handleUpdate = async e => {
     e.preventDefault();
@@ -38,11 +75,13 @@ export const EditThreadView = () => {
     };
 
     try {
-      const updatedThreadResponse = await updateThreadById(threadId, updatedThread);
+      const updatedThreadResponse = await updateThreadById(
+        threadId,
+        updatedThread
+      );
       if (updatedThreadResponse) {
-        // Visa en alert när tråden har uppdaterats
         alert("Tråden har uppdaterats!");
-
+        // Uppdatera listan över trådar om så önskas
         setThreads(prevThreads =>
           prevThreads.map(thread =>
             thread.thread_id === updatedThreadResponse.thread_id
@@ -53,24 +92,6 @@ export const EditThreadView = () => {
       }
     } catch (error) {
       console.error("Failed to update thread", error);
-    }
-  };
-
-  const handleSelectChange = e => {
-    const selectedThreadId = e.target.value;
-    const selectedThread = threads.find(
-      thread => thread.thread_id.toString() === selectedThreadId
-    );
-
-    if (selectedThread) {
-      setTitle(selectedThread.thread_title);
-      setContent(selectedThread.thread_content);
-      setAuthor(selectedThread.thread_author);
-      setTimestamp(new Date(selectedThread.thread_timestamp).toISOString());
-      setStatus(selectedThread.thread_status);
-      setThreadId(selectedThread.thread_id);
-      // Förutsätter att API:et returnerar en array med kategori-ID:n
-      setCategoryIds(selectedThread.category_ids || []);
     }
   };
 
@@ -113,7 +134,7 @@ export const EditThreadView = () => {
           placeholder="Ange författarnamn"
         />
 
-        {/* Multi-select för att välja flera kategorier */}
+        {/* Multi-select för att visa/redigera redan valda kategorier */}
         <label>Redigera Kategori(er)</label>
         <CategorySelect value={categoryIds} onChange={setCategoryIds} />
 

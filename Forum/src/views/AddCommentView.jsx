@@ -27,7 +27,7 @@ export const AddCommentView = () => {
 
   const handleSubmit = async e => {
     e.preventDefault();
-    const commentTimestamp = new Date().toLocaleString();
+    const commentTimestamp = new Date().toISOString();
 
     const commentData = {
       comment_content: comment,
