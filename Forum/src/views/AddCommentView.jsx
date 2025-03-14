@@ -27,6 +27,13 @@ export const AddCommentView = () => {
 
   const handleSubmit = async e => {
     e.preventDefault();
+
+    // Enkel validering: kontrollera att både kommentar och författare inte är tomma
+    if (!comment.trim() || !author.trim()) {
+      alert("Både kommentar och författarnamn måste fyllas i.");
+      return;
+    }
+
     const commentTimestamp = new Date().toISOString();
 
     const commentData = {
@@ -38,7 +45,6 @@ export const AddCommentView = () => {
     try {
       const addedComment = await createComment(threadId, commentData);
       setComments([...comments, addedComment]);
-      // Visa en alert när kommentaren har skapats
       alert("Kommentaren har skapats!");
       setComment("");
       setAuthor("");
@@ -50,14 +56,12 @@ export const AddCommentView = () => {
   return (
     <section className="container new-comment-container">
       <h1>Lägg till Kommentar</h1>
-
       <form onSubmit={handleSubmit} className="new-comment-form">
         <CommentInput
           value={comment}
           onChange={setComment}
           onSubmit={handleSubmit}
         />
-
         <input
           className="input-field"
           type="text"
@@ -65,7 +69,6 @@ export const AddCommentView = () => {
           onChange={e => setAuthor(e.target.value)}
           placeholder="Ditt namn"
         />
-
         <button type="submit" className="btn">
           Lägg till Kommentar
         </button>

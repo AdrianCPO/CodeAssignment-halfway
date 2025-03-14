@@ -12,12 +12,11 @@ export const EditThreadView = () => {
   const [content, setContent] = useState("");
   const [author, setAuthor] = useState("");
   const [timestamp, setTimestamp] = useState(new Date().toISOString());
-  const [status, setStatus] = useState("open"); // Standardvärde
+  const [status, setStatus] = useState("open");
   const [threadId, setThreadId] = useState("");
-  const [categoryIds, setCategoryIds] = useState([]); // State för valda kategori-ID:n
+  const [categoryIds, setCategoryIds] = useState([]);
   const [threads, setThreads] = useState([]);
 
-  // Hämta listan över trådar (utan fullständig data)
   useEffect(() => {
     const loadThreads = async () => {
       try {
@@ -30,11 +29,9 @@ export const EditThreadView = () => {
     loadThreads();
   }, []);
 
-  // När en tråd väljs hämtar vi fullständig data med fetchThreadById
   const handleSelectChange = async e => {
     const selectedThreadId = e.target.value;
     setThreadId(selectedThreadId);
-
     if (selectedThreadId) {
       try {
         const selectedThread = await fetchThreadById(selectedThreadId);
@@ -43,7 +40,6 @@ export const EditThreadView = () => {
         setAuthor(selectedThread.thread_author);
         setTimestamp(new Date(selectedThread.thread_timestamp).toISOString());
         setStatus(selectedThread.thread_status);
-        // Sätt kategori-arrayen – se till att eventuella strängvärden konverteras till nummer
         const normalizedCategories = selectedThread.category_ids
           ? selectedThread.category_ids.map(id => Number(id))
           : [];
@@ -52,7 +48,6 @@ export const EditThreadView = () => {
         console.error("Failed to fetch thread details:", error);
       }
     } else {
-      // Om inget tråd-ID är valt, nollställ fälten
       setTitle("");
       setContent("");
       setAuthor("");
@@ -65,13 +60,23 @@ export const EditThreadView = () => {
   const handleUpdate = async e => {
     e.preventDefault();
 
+    // Validering: Kontrollera att en tråd är vald och att obligatoriska fält är ifyllda
+    if (!threadId) {
+      alert("Vänligen välj en tråd att redigera.");
+      return;
+    }
+    if (!title.trim() || !content.trim() || !author.trim()) {
+      alert("Titel, innehåll och författare måste fyllas i.");
+      return;
+    }
+
     const updatedThread = {
       thread_title: title,
       thread_content: content,
       thread_author: author,
       thread_timestamp: timestamp,
       thread_status: status,
-      category_ids: categoryIds, // Skickar med array med kategori-ID:n
+      category_ids: categoryIds,
     };
 
     try {
@@ -81,7 +86,6 @@ export const EditThreadView = () => {
       );
       if (updatedThreadResponse) {
         alert("Tråden har uppdaterats!");
-        // Uppdatera listan över trådar om så önskas
         setThreads(prevThreads =>
           prevThreads.map(thread =>
             thread.thread_id === updatedThreadResponse.thread_id
@@ -113,7 +117,6 @@ export const EditThreadView = () => {
             </option>
           ))}
         </select>
-
         <ThreadInput
           label="Titel"
           value={title}
@@ -133,18 +136,14 @@ export const EditThreadView = () => {
           onChange={setAuthor}
           placeholder="Ange författarnamn"
         />
-
-        {/* Multi-select för att visa/redigera redan valda kategorier */}
         <label>Redigera Kategori(er)</label>
         <CategorySelect value={categoryIds} onChange={setCategoryIds} />
-
         <ThreadInput
           label="Datum"
           value={timestamp}
           onChange={setTimestamp}
           placeholder="Ange datum"
         />
-
         <label>Status</label>
         <select
           value={status}
@@ -154,7 +153,6 @@ export const EditThreadView = () => {
           <option value="open">Öppen</option>
           <option value="closed">Stängd</option>
         </select>
-
         <button type="submit" className="btn">
           Uppdatera
         </button>

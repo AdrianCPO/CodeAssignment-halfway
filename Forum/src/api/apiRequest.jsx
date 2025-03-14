@@ -1,4 +1,3 @@
-// apiClient.js (eller apiRequest.jsx)
 export const apiRequest = async (
   url,
   options = {},

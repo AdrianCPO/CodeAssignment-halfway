@@ -9,11 +9,18 @@ export const AddThreadView = () => {
   const [threadContent, setThreadContent] = useState("");
   const [threadAuthor, setThreadAuthor] = useState("");
   const [threadStatus, setThreadStatus] = useState("open");
-  const [categoryIds, setCategoryIds] = useState([]); // Nu en array
+  const [categoryIds, setCategoryIds] = useState([]);
   const { setThreads } = useThreadContext();
 
   const handleSubmit = async e => {
     e.preventDefault();
+
+    // Validering: kolla att titel, innehåll och författare är ifyllda
+    if (!threadTitle.trim() || !threadContent.trim() || !threadAuthor.trim()) {
+      alert("Titel, innehåll och författare måste fyllas i.");
+      return;
+    }
+
     const threadTimestamp = new Date().toLocaleString();
 
     const newThread = {
@@ -22,13 +29,12 @@ export const AddThreadView = () => {
       thread_author: threadAuthor,
       thread_timestamp: threadTimestamp,
       thread_status: threadStatus,
-      category_ids: categoryIds, // Skickar med en array med kategori-ID:n
+      category_ids: categoryIds,
     };
 
     try {
       const addedThread = await createThread(newThread);
       if (addedThread) {
-        // Visa en alert när tråden har skapats
         alert("Tråden har skapats!");
         const updatedThreads = await fetchThreads();
         setThreads(updatedThreads);
@@ -61,10 +67,7 @@ export const AddThreadView = () => {
           onChange={setThreadAuthor}
           placeholder="Ange ditt namn"
         />
-
-        {/* Multi-select för att välja flera kategorier */}
         <CategorySelect value={categoryIds} onChange={setCategoryIds} />
-
         <label>Status</label>
         <select
           value={threadStatus}
@@ -74,7 +77,6 @@ export const AddThreadView = () => {
           <option value="open">Öppen</option>
           <option value="closed">Stängd</option>
         </select>
-
         <button type="submit" className="btn">
           Skapa Tråd
         </button>
