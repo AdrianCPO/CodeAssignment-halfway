@@ -1,11 +1,13 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useThreadContext } from "../ThreadContextProvider";
 import { fetchThreadById } from "../api/apiService";
 import { deleteComment } from "../api/apiServiceComments";
 import { fetchCategories } from "../api/apiServiceCategories";
 
 export const ThreadDetailView = () => {
   const { threadId } = useParams();
+  const { threads } = useThreadContext();
   const [thread, setThread] = useState(null);
   const [comments, setComments] = useState([]);
   const [threadCategories, setThreadCategories] = useState([]);
@@ -14,18 +16,24 @@ export const ThreadDetailView = () => {
   const [showComments, setShowComments] = useState(false);
 
   useEffect(() => {
-    const fetchThreadDetails = async () => {
-      try {
-        const data = await fetchThreadById(threadId);
-        setThread(data);
-        setLoading(false);
-      } catch (error) {
-        setError(error.message);
-        setLoading(false);
-      }
-    };
-    fetchThreadDetails();
-  }, [threadId]);
+    const foundThread = threads.find(t => t.thread_id.toString() === threadId);
+    if (foundThread) {
+      setThread(foundThread);
+      setLoading(false);
+    } else {
+      const fetchThreadDetails = async () => {
+        try {
+          const data = await fetchThreadById(threadId);
+          setThread(data);
+          setLoading(false);
+        } catch (error) {
+          setError(error.message);
+          setLoading(false);
+        }
+      };
+      fetchThreadDetails();
+    }
+  }, [threadId, threads]);
 
   useEffect(() => {
     const fetchThreadComments = async () => {
@@ -51,7 +59,6 @@ export const ThreadDetailView = () => {
     fetchThreadComments();
   }, [threadId]);
 
-  // Ny useEffect: Hämta alla kategorier och filtrera ut de som matchar trådens kategori-ID:n
   useEffect(() => {
     const fetchThreadCategories = async () => {
       if (thread && thread.category_ids && thread.category_ids.length > 0) {
@@ -95,21 +102,16 @@ export const ThreadDetailView = () => {
       <p>
         Status: {thread.thread_status === "closed" ? "🔒 Stängd" : "✅ Öppen"}
       </p>
-
-      {/* Visa kategori(er) om de finns */}
       {threadCategories.length > 0 && (
         <p>
           Kategorier:{" "}
           {threadCategories.map(cat => cat.category_name).join(", ")}
         </p>
       )}
-
       <p>Antal kommentarer: {comments.length}</p>
-
       <button onClick={() => setShowComments(prev => !prev)}>
         {showComments ? "Dölj kommentarer" : "Visa kommentarer"}
       </button>
-
       {showComments &&
         (comments.length === 0 ? (
           <p>Inga kommentarer har lagts till än.</p>
@@ -129,8 +131,6 @@ export const ThreadDetailView = () => {
             ))}
           </div>
         ))}
-
-      {/* Visar bara kommentarsformuläret om tråden är öppen */}
       {thread.thread_status === "open" ? (
         <Link to={`/new-comment/${thread.thread_id}`} className="btn">
           Lägg till kommentar

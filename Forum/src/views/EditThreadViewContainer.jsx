@@ -1,24 +1,23 @@
 import { useState, useEffect } from "react";
-import { ThreadInput } from "../components/ThreadInput";
 import {
   fetchThreads,
   fetchThreadById,
   updateThreadById,
 } from "../api/apiService";
-import { CategorySelect } from "../components/CategorySelect";
-import { ErrorMessage } from "../components/ErrorMessage";
+import { ThreadForm } from "../components/ThreadForm";
 
-export const EditThreadView = () => {
+export const EditThreadViewContainer = () => {
+  const [threads, setThreads] = useState([]);
+  const [threadId, setThreadId] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [author, setAuthor] = useState("");
   const [timestamp, setTimestamp] = useState(new Date().toISOString());
   const [status, setStatus] = useState("open");
-  const [threadId, setThreadId] = useState("");
   const [categoryIds, setCategoryIds] = useState([]);
-  const [threads, setThreads] = useState([]);
   const [formError, setFormError] = useState(null);
 
+  // Hämta listan över trådar vid mount
   useEffect(() => {
     const loadThreads = async () => {
       try {
@@ -31,7 +30,8 @@ export const EditThreadView = () => {
     loadThreads();
   }, []);
 
-  const handleSelectChange = async e => {
+  // Hantera trådval via dropdown
+  const handleThreadSelectChange = async e => {
     const selectedThreadId = e.target.value;
     setThreadId(selectedThreadId);
     setFormError(null);
@@ -61,11 +61,11 @@ export const EditThreadView = () => {
     }
   };
 
+  // Hantera submit: validera och uppdatera tråden
   const handleUpdate = async e => {
     e.preventDefault();
     setFormError(null);
 
-    // Validering: kontrollera att en tråd är vald och att obligatoriska fält är ifyllda
     if (!threadId) {
       setFormError("Vänligen välj en tråd att redigera.");
       return;
@@ -108,62 +108,25 @@ export const EditThreadView = () => {
   return (
     <div className="container edit-thread-container">
       <h1>Redigera Tråd</h1>
-      <form onSubmit={handleUpdate} className="edit-thread-form">
-        <label htmlFor="thread-select">Välj en tråd:</label>
-        <select
-          id="thread-select"
-          className="thread-select"
-          value={threadId}
-          onChange={handleSelectChange}
-        >
-          <option value="">Välj en tråd</option>
-          {threads.map(thread => (
-            <option key={thread.thread_id} value={thread.thread_id}>
-              {thread.thread_title}
-            </option>
-          ))}
-        </select>
-        <ThreadInput
-          label="Titel"
-          value={title}
-          onChange={setTitle}
-          placeholder="Ange titel"
-        />
-        <ThreadInput
-          label="Innehåll"
-          value={content}
-          onChange={setContent}
-          placeholder="Ange innehåll"
-          isTextArea={true}
-        />
-        <ThreadInput
-          label="Författare"
-          value={author}
-          onChange={setAuthor}
-          placeholder="Ange författarnamn"
-        />
-        <label>Redigera Kategori(er)</label>
-        <CategorySelect value={categoryIds} onChange={setCategoryIds} />
-        <ThreadInput
-          label="Datum"
-          value={timestamp}
-          onChange={setTimestamp}
-          placeholder="Ange datum"
-        />
-        <label>Status</label>
-        <select
-          value={status}
-          onChange={e => setStatus(e.target.value)}
-          className="status-select"
-        >
-          <option value="open">Öppen</option>
-          <option value="closed">Stängd</option>
-        </select>
-        <ErrorMessage message={formError} />
-        <button type="submit" className="btn">
-          Uppdatera
-        </button>
-      </form>
+      <ThreadForm
+        threads={threads}
+        threadId={threadId}
+        title={title}
+        content={content}
+        author={author}
+        timestamp={timestamp}
+        status={status}
+        categoryIds={categoryIds}
+        formError={formError}
+        onThreadSelectChange={handleThreadSelectChange}
+        onTitleChange={setTitle}
+        onContentChange={setContent}
+        onAuthorChange={setAuthor}
+        onTimestampChange={setTimestamp}
+        onStatusChange={e => setStatus(e.target.value)}
+        onCategoryChange={setCategoryIds}
+        onSubmit={handleUpdate}
+      />
     </div>
   );
 };

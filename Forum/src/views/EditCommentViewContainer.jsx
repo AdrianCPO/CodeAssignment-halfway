@@ -1,3 +1,4 @@
+// EditCommentViewContainer.jsx
 import { useState, useEffect } from "react";
 import {
   fetchCommentsByThreadId,
@@ -5,17 +6,19 @@ import {
 } from "../api/apiServiceComments";
 import { fetchThreads } from "../api/apiService";
 import { ErrorMessage } from "../components/ErrorMessage";
+import { CommentForm } from "../components/CommentForm";
 
-export const EditCommentView = () => {
+export const EditCommentViewContainer = () => {
+  const [threads, setThreads] = useState([]);
   const [threadId, setThreadId] = useState("");
+  const [comments, setComments] = useState([]);
   const [commentId, setCommentId] = useState("");
   const [commentContent, setCommentContent] = useState("");
   const [author, setAuthor] = useState("");
   const [timestamp, setTimestamp] = useState(new Date().toISOString());
-  const [threads, setThreads] = useState([]);
-  const [comments, setComments] = useState([]);
   const [formError, setFormError] = useState(null);
 
+  // Hämta trådar vid mount
   useEffect(() => {
     const loadThreads = async () => {
       try {
@@ -28,6 +31,7 @@ export const EditCommentView = () => {
     loadThreads();
   }, []);
 
+  // Hämta kommentarer när tråd-id ändras
   useEffect(() => {
     const loadComments = async () => {
       try {
@@ -64,7 +68,7 @@ export const EditCommentView = () => {
     e.preventDefault();
     setFormError(null);
 
-    // Validering: Se till att en kommentar är vald och att nödvändiga fält inte är tomma
+    // Validering: kontrollera att både tråd och kommentar är valda samt att fälten inte är tomma
     if (!threadId || !commentId) {
       setFormError("Vänligen välj både tråd och kommentar.");
       return;
@@ -102,57 +106,20 @@ export const EditCommentView = () => {
   return (
     <div className="container edit-comment-container">
       <h1>Redigera Kommentar</h1>
-      <form onSubmit={handleUpdate} className="edit-comment-form">
-        <label htmlFor="thread-select">Välj en tråd:</label>
-        <select
-          id="thread-select"
-          className="thread-select"
-          value={threadId}
-          onChange={handleThreadSelectChange}
-        >
-          <option value="">Välj en tråd</option>
-          {threads.map(thread => (
-            <option key={thread.thread_id} value={thread.thread_id}>
-              {thread.thread_title}
-            </option>
-          ))}
-        </select>
-        {threadId && (
-          <>
-            <label htmlFor="comment-select">Välj en kommentar:</label>
-            <select
-              id="comment-select"
-              className="comment-select"
-              value={commentId}
-              onChange={handleCommentSelectChange}
-            >
-              <option value="">Välj en kommentar</option>
-              {comments.map(comment => (
-                <option key={comment.comment_id} value={comment.comment_id}>
-                  {comment.comment_content.substring(0, 30)}...
-                </option>
-              ))}
-            </select>
-          </>
-        )}
-        <textarea
-          className="input-textarea"
-          value={commentContent}
-          onChange={e => setCommentContent(e.target.value)}
-          placeholder="Redigera kommentar"
-        />
-        <input
-          className="input-field"
-          type="text"
-          value={author}
-          onChange={e => setAuthor(e.target.value)}
-          placeholder="Författare"
-        />
-        <ErrorMessage message={formError} />
-        <button type="submit" className="btn">
-          Uppdatera kommentar
-        </button>
-      </form>
+      <CommentForm
+        threads={threads}
+        threadId={threadId}
+        comments={comments}
+        commentId={commentId}
+        commentContent={commentContent}
+        author={author}
+        formError={formError}
+        onThreadSelectChange={handleThreadSelectChange}
+        onCommentSelectChange={handleCommentSelectChange}
+        onContentChange={setCommentContent}
+        onAuthorChange={setAuthor}
+        onSubmit={handleUpdate}
+      />
     </div>
   );
 };
