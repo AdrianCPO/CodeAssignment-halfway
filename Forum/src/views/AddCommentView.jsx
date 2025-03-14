@@ -5,7 +5,7 @@ import { CommentInput } from "../components/commentInput";
 import {
   fetchCommentsByThreadId,
   createComment,
-} from "../components/apiServiceComments";
+} from "../api/apiServiceComments";
 
 export const AddCommentView = () => {
   const { threadId } = useParams(); // Hämta threadId från URL

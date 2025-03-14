@@ -4,7 +4,7 @@ import { useThreadContext } from "../ThreadContextProvider";
 import { SortThreads } from "../components/SortThreads";
 import { SearchBar } from "../components/SearchBar";
 import { CategoryFilter } from "../components/CategoryFilter";
-import { fetchThreads, fetchThreadsByCategory } from "../components/apiService";
+import { fetchThreads, fetchThreadsByCategory } from "../api/apiService";
 
 export const ThreadView = () => {
   const { threads, setThreads } = useThreadContext();

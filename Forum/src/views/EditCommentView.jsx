@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import {
   fetchCommentsByThreadId,
   updateComment,
-} from "../components/apiServiceComments";
-import { fetchThreads } from "../components/apiService";
+} from "../api/apiServiceComments";
+import { fetchThreads } from "../api/apiService";
 
 export const EditCommentView = () => {
   const [threadId, setThreadId] = useState("");

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { fetchCategories } from "../components/apiServiceCategories";
+import { fetchCategories } from "../api/apiServiceCategories";
 
 export const CategorySelect = ({ value, onChange }) => {
   const [categories, setCategories] = useState([]);

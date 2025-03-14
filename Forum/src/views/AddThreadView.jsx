@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useThreadContext } from "../ThreadContextProvider";
 import { ThreadInput } from "../components/ThreadInput";
-import { fetchThreads, createThread } from "../components/apiService";
+import { fetchThreads, createThread } from "../api/apiService";
 import { CategorySelect } from "../components/CategorySelect";
 
 export const AddThreadView = () => {

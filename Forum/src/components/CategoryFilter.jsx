@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchCategories } from "../components/apiServiceCategories";
+import { fetchCategories } from "../api/apiServiceCategories";
 
 export const CategoryFilter = ({ onSelectCategory }) => {
   const [categories, setCategories] = useState([]);

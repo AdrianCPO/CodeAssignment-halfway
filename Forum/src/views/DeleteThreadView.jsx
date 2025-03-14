@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { fetchThreads, deleteThread } from "../components/apiService";
+import { fetchThreads, deleteThread } from "../api/apiService";
 
 export const DeleteThreadView = () => {
   const [threads, setThreads] = useState([]);

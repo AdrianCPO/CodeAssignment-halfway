@@ -4,7 +4,7 @@ import {
   fetchThreads,
   fetchThreadById,
   updateThreadById,
-} from "../components/apiService";
+} from "../api/apiService";
 import { CategorySelect } from "../components/CategorySelect";
 
 export const EditThreadView = () => {

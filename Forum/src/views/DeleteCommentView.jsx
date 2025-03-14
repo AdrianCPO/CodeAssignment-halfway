@@ -1,4 +1,4 @@
-import { deleteComment } from "../components/apiServiceComments";
+import { deleteComment } from "../api/apiServiceComments";
 
 export const DeleteCommentView = ({ comments, setComments }) => {
   const handleCommentDelete = async id => {
