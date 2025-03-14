@@ -6,6 +6,7 @@ import {
   updateThreadById,
 } from "../api/apiService";
 import { CategorySelect } from "../components/CategorySelect";
+import { ErrorMessage } from "../components/ErrorMessage";
 
 export const EditThreadView = () => {
   const [title, setTitle] = useState("");
@@ -16,6 +17,7 @@ export const EditThreadView = () => {
   const [threadId, setThreadId] = useState("");
   const [categoryIds, setCategoryIds] = useState([]);
   const [threads, setThreads] = useState([]);
+  const [formError, setFormError] = useState(null);
 
   useEffect(() => {
     const loadThreads = async () => {
@@ -32,6 +34,7 @@ export const EditThreadView = () => {
   const handleSelectChange = async e => {
     const selectedThreadId = e.target.value;
     setThreadId(selectedThreadId);
+    setFormError(null);
     if (selectedThreadId) {
       try {
         const selectedThread = await fetchThreadById(selectedThreadId);
@@ -46,6 +49,7 @@ export const EditThreadView = () => {
         setCategoryIds(normalizedCategories);
       } catch (error) {
         console.error("Failed to fetch thread details:", error);
+        setFormError("Det gick inte att hämta trådens detaljer.");
       }
     } else {
       setTitle("");
@@ -59,14 +63,15 @@ export const EditThreadView = () => {
 
   const handleUpdate = async e => {
     e.preventDefault();
+    setFormError(null);
 
-    // Validering: Kontrollera att en tråd är vald och att obligatoriska fält är ifyllda
+    // Validering: kontrollera att en tråd är vald och att obligatoriska fält är ifyllda
     if (!threadId) {
-      alert("Vänligen välj en tråd att redigera.");
+      setFormError("Vänligen välj en tråd att redigera.");
       return;
     }
     if (!title.trim() || !content.trim() || !author.trim()) {
-      alert("Titel, innehåll och författare måste fyllas i.");
+      setFormError("Titel, innehåll och författare måste fyllas i.");
       return;
     }
 
@@ -96,6 +101,7 @@ export const EditThreadView = () => {
       }
     } catch (error) {
       console.error("Failed to update thread", error);
+      setFormError("Det gick inte att uppdatera tråden.");
     }
   };
 
@@ -153,6 +159,7 @@ export const EditThreadView = () => {
           <option value="open">Öppen</option>
           <option value="closed">Stängd</option>
         </select>
+        <ErrorMessage message={formError} />
         <button type="submit" className="btn">
           Uppdatera
         </button>

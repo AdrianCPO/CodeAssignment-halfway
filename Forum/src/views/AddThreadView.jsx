@@ -3,6 +3,7 @@ import { useThreadContext } from "../ThreadContextProvider";
 import { ThreadInput } from "../components/ThreadInput";
 import { fetchThreads, createThread } from "../api/apiService";
 import { CategorySelect } from "../components/CategorySelect";
+import { ErrorMessage } from "../components/ErrorMessage";
 
 export const AddThreadView = () => {
   const [threadTitle, setThreadTitle] = useState("");
@@ -10,14 +11,16 @@ export const AddThreadView = () => {
   const [threadAuthor, setThreadAuthor] = useState("");
   const [threadStatus, setThreadStatus] = useState("open");
   const [categoryIds, setCategoryIds] = useState([]);
+  const [formError, setFormError] = useState(null);
   const { setThreads } = useThreadContext();
 
   const handleSubmit = async e => {
     e.preventDefault();
+    setFormError(null);
 
-    // Validering: kolla att titel, innehåll och författare är ifyllda
+    // Enkel validering
     if (!threadTitle.trim() || !threadContent.trim() || !threadAuthor.trim()) {
-      alert("Titel, innehåll och författare måste fyllas i.");
+      setFormError("Titel, innehåll och författare måste fyllas i.");
       return;
     }
 
@@ -38,9 +41,14 @@ export const AddThreadView = () => {
         alert("Tråden har skapats!");
         const updatedThreads = await fetchThreads();
         setThreads(updatedThreads);
+        // Rensa formuläret efter lyckad skapelse
+        setThreadTitle("");
+        setThreadContent("");
+        setThreadAuthor("");
       }
     } catch (error) {
       console.error("Det gick inte att skapa tråden:", error);
+      setFormError("Något gick fel vid skapandet av tråden.");
     }
   };
 
@@ -67,6 +75,10 @@ export const AddThreadView = () => {
           onChange={setThreadAuthor}
           placeholder="Ange ditt namn"
         />
+
+        {/* Visa inline fel om det finns */}
+        <ErrorMessage message={formError} />
+
         <CategorySelect value={categoryIds} onChange={setCategoryIds} />
         <label>Status</label>
         <select

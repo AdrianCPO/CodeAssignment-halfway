@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
-import { fetchCommentsByThreadId, updateComment } from "../api/apiServiceComments";
+import {
+  fetchCommentsByThreadId,
+  updateComment,
+} from "../api/apiServiceComments";
 import { fetchThreads } from "../api/apiService";
+import { ErrorMessage } from "../components/ErrorMessage";
 
 export const EditCommentView = () => {
   const [threadId, setThreadId] = useState("");
@@ -10,6 +14,7 @@ export const EditCommentView = () => {
   const [timestamp, setTimestamp] = useState(new Date().toISOString());
   const [threads, setThreads] = useState([]);
   const [comments, setComments] = useState([]);
+  const [formError, setFormError] = useState(null);
 
   useEffect(() => {
     const loadThreads = async () => {
@@ -47,7 +52,6 @@ export const EditCommentView = () => {
     const selectedComment = comments.find(
       comment => comment.comment_id.toString() === selectedCommentId
     );
-
     if (selectedComment) {
       setCommentId(selectedComment.comment_id);
       setCommentContent(selectedComment.comment_content);
@@ -58,14 +62,15 @@ export const EditCommentView = () => {
 
   const handleUpdate = async e => {
     e.preventDefault();
+    setFormError(null);
 
     // Validering: Se till att en kommentar är vald och att nödvändiga fält inte är tomma
     if (!threadId || !commentId) {
-      alert("Vänligen välj både tråd och kommentar.");
+      setFormError("Vänligen välj både tråd och kommentar.");
       return;
     }
     if (!commentContent.trim() || !author.trim()) {
-      alert("Kommentarens innehåll och författare måste fyllas i.");
+      setFormError("Kommentarens innehåll och författare måste fyllas i.");
       return;
     }
 
@@ -76,7 +81,10 @@ export const EditCommentView = () => {
     };
 
     try {
-      const updatedCommentResponse = await updateComment(commentId, updatedComment);
+      const updatedCommentResponse = await updateComment(
+        commentId,
+        updatedComment
+      );
       setComments(prevComments =>
         prevComments.map(comment =>
           comment.comment_id === updatedCommentResponse.comment_id
@@ -87,6 +95,7 @@ export const EditCommentView = () => {
       alert("Kommentar uppdaterad!");
     } catch (error) {
       console.error("Fel vid uppdatering av kommentar:", error);
+      setFormError("Det gick inte att uppdatera kommentaren.");
     }
   };
 
@@ -139,6 +148,7 @@ export const EditCommentView = () => {
           onChange={e => setAuthor(e.target.value)}
           placeholder="Författare"
         />
+        <ErrorMessage message={formError} />
         <button type="submit" className="btn">
           Uppdatera kommentar
         </button>

@@ -6,12 +6,14 @@ import {
   fetchCommentsByThreadId,
   createComment,
 } from "../api/apiServiceComments";
+import { ErrorMessage } from "../components/ErrorMessage";
 
 export const AddCommentView = () => {
-  const { threadId } = useParams(); // Hämta threadId från URL
-  const { comments, setComments } = useCommentContext(); // Hämtar kommentarerna från context
+  const { threadId } = useParams();
+  const { comments, setComments } = useCommentContext();
   const [comment, setComment] = useState("");
   const [author, setAuthor] = useState("");
+  const [formError, setFormError] = useState(null);
 
   useEffect(() => {
     const loadComments = async () => {
@@ -27,15 +29,15 @@ export const AddCommentView = () => {
 
   const handleSubmit = async e => {
     e.preventDefault();
+    setFormError(null);
 
-    // Enkel validering: kontrollera att både kommentar och författare inte är tomma
+    // Validering: kontrollera att både kommentar och författare inte är tomma
     if (!comment.trim() || !author.trim()) {
-      alert("Både kommentar och författarnamn måste fyllas i.");
+      setFormError("Både kommentar och författarnamn måste fyllas i.");
       return;
     }
 
     const commentTimestamp = new Date().toISOString();
-
     const commentData = {
       comment_content: comment,
       comment_author: author,
@@ -50,6 +52,7 @@ export const AddCommentView = () => {
       setAuthor("");
     } catch (error) {
       console.error("Failed to add comment:", error);
+      setFormError("Det gick inte att lägga till kommentaren.");
     }
   };
 
@@ -69,6 +72,7 @@ export const AddCommentView = () => {
           onChange={e => setAuthor(e.target.value)}
           placeholder="Ditt namn"
         />
+        <ErrorMessage message={formError} />
         <button type="submit" className="btn">
           Lägg till Kommentar
         </button>

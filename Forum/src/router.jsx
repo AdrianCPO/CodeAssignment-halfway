@@ -7,10 +7,10 @@ import { App } from "./components/App";
 import { DeleteThreadView } from "./views/DeleteThreadView";
 import { EditThreadView } from "./views/EditThreadView";
 import { AddThreadView } from "./views/AddThreadView";
-import { ThreadView } from "./views/ThreadView";
 import { ThreadDetailView } from "./views/ThreadDetailView";
 import { AddCommentView } from "./views/AddCommentView";
 import { EditCommentView } from "./views/EditCommentView";
+import { ThreadViewContainer } from "./views/ThreadViewContainer";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -23,7 +23,7 @@ export const router = createBrowserRouter(
         }
         path="*"
       />
-      <Route path="/threads" element={<ThreadView />} index />
+      <Route path="/threads" element={<ThreadViewContainer />} index />
       <Route path="/threads/:threadId" element={<ThreadDetailView />} />
       <Route path="/new-thread" element={<AddThreadView />} />
       <Route path="/new-comment/:threadId" element={<AddCommentView />} />
