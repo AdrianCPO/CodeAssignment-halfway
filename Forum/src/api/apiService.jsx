@@ -1,4 +1,3 @@
-// apiService.jsx
 import { apiRequest } from "./apiRequest";
 
 export const fetchThreads = async (sortBy, searchTerm) => {
@@ -41,7 +40,7 @@ export const updateThreadById = async (threadId, updatedThread) => {
 export const deleteThread = async threadId => {
   const url = `http://localhost:3000/api/threads/delete-thread/${threadId}`;
   const options = { method: "DELETE" };
-  // Här returneras inget, men vi kastar fel om något går fel.
+  // Här returneras inget, men jag ger felmeddelande om något går fel.
   await apiRequest(url, options, "Failed to delete thread");
 };
 

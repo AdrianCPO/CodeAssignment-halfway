@@ -17,7 +17,6 @@ export const EditThreadViewContainer = () => {
   const [categoryIds, setCategoryIds] = useState([]);
   const [formError, setFormError] = useState(null);
 
-  // Hämta listan över trådar vid mount
   useEffect(() => {
     const loadThreads = async () => {
       try {
@@ -30,7 +29,6 @@ export const EditThreadViewContainer = () => {
     loadThreads();
   }, []);
 
-  // Hantera trådval via dropdown
   const handleThreadSelectChange = async e => {
     const selectedThreadId = e.target.value;
     setThreadId(selectedThreadId);
@@ -61,7 +59,6 @@ export const EditThreadViewContainer = () => {
     }
   };
 
-  // Hantera submit: validera och uppdatera tråden
   const handleUpdate = async e => {
     e.preventDefault();
     setFormError(null);

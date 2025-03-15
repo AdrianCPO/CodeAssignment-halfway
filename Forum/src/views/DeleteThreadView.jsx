@@ -7,14 +7,11 @@ export const DeleteThreadView = () => {
   const handleDelete = async threadId => {
     try {
       await deleteThread(threadId);
-      console.log(`Thread with ID ${threadId} deleted successfully`);
 
-      // Uppdatera trådlistan genom att filtrera bort den borttagna tråden
       setThreads(prevThreads =>
         prevThreads.filter(thread => thread.thread_id !== threadId)
       );
 
-      // Visa en alert när tråden har tagits bort
       alert("Tråden har tagits bort!");
     } catch (error) {
       console.error("Failed to delete thread", error);
@@ -24,7 +21,7 @@ export const DeleteThreadView = () => {
   useEffect(() => {
     const loadThreads = async () => {
       try {
-        const data = await fetchThreads(); // Hämta trådar från API
+        const data = await fetchThreads();
         setThreads(data);
       } catch (error) {
         console.error("Failed to fetch threads", error);

@@ -1,13 +1,11 @@
 import {
   getAllCategories,
   getCategoryById,
-  getCategoryByName,
   createCategory,
   updateCategory,
 } from "../models/categoryModel.js";
 import { handleServerError } from "../utils/handleServerError.js";
 
-// Hämta alla kategorier
 export const getAllCategoriesController = async (req, res) => {
   try {
     const categories = await getAllCategories();
@@ -17,22 +15,6 @@ export const getAllCategoriesController = async (req, res) => {
   }
 };
 
-// Hämta kategori baserat på namn
-export const getCategoryByNameController = async (req, res) => {
-  const categoryName = req.params.categoryName; // Ta emot kategorinamn från URL
-
-  try {
-    const category = await getCategoryByName(categoryName);
-    if (!category) {
-      return res.status(404).json({ error: "Category not found" });
-    }
-    res.json(category);
-  } catch (error) {
-    handleServerError(res, "fetching category by name", error);
-  }
-};
-
-// Hämta kategori baserat på ID (om du vill ha denna endpoint)
 export const getCategoryByIdController = async (req, res) => {
   const categoryId = req.params.categoryId;
   try {
@@ -46,7 +28,6 @@ export const getCategoryByIdController = async (req, res) => {
   }
 };
 
-// Skapa en ny kategori
 export const createCategoryController = async (req, res) => {
   const { category_name } = req.body;
   if (!category_name) {
@@ -63,7 +44,6 @@ export const createCategoryController = async (req, res) => {
   }
 };
 
-// Uppdatera en kategori
 export const updateCategoryController = async (req, res) => {
   const { category_name } = req.body;
   const { categoryId } = req.params;

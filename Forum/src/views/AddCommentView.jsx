@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useCommentContext } from "../CommentContextProvider";
-import { CommentInput } from "../components/commentInput";
+import { CommentInput } from "../components/CommentInput";
 import {
   fetchCommentsByThreadId,
   createComment,

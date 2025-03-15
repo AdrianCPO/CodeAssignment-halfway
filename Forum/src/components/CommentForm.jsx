@@ -1,4 +1,3 @@
-// CommentForm.jsx
 import { ErrorMessage } from "./ErrorMessage";
 
 export const CommentForm = ({

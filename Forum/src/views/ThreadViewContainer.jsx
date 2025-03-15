@@ -26,7 +26,6 @@ export const ThreadViewContainer = () => {
         } else {
           data = await fetchThreads(sortBy, searchTerm);
         }
-        console.log("Hämtade trådar:", data);
         setThreads(data);
       } catch (error) {
         console.error("Error fetching threads:", error);

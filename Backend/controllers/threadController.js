@@ -7,7 +7,6 @@ import {
   deleteThread,
 } from "../models/threadModel.js";
 
-// Validera om threadId är ett giltigt nummer
 const validateThreadId = (threadId, res) => {
   if (!threadId || isNaN(threadId)) {
     res.status(400).json({ message: "Invalid thread ID format" });
@@ -19,14 +18,6 @@ const validateThreadId = (threadId, res) => {
 // Hämta trådar med sökning, kategori och sortering
 export const getThreads = async (req, res) => {
   const { searchTerm, category, sortBy } = req.query;
-  console.log(
-    "Sökterm:",
-    searchTerm,
-    "Kategori:",
-    category,
-    "Sortering:",
-    sortBy
-  );
 
   try {
     const threads = await getFilteredSortedThreads({
@@ -40,7 +31,6 @@ export const getThreads = async (req, res) => {
   }
 };
 
-// Hämta en specifik tråd via ID
 export const getThreadByIdController = async (req, res) => {
   const threadId = req.params.threadId;
   if (!validateThreadId(threadId, res)) return;
@@ -57,8 +47,6 @@ export const getThreadByIdController = async (req, res) => {
   }
 };
 
-// Skapa en ny tråd med möjlighet att sätta kategori
-// Ändrad: förväntar sig nu att klienten skickar med category_ids (en array med kategori-ID:n)
 export const newThread = async (req, res) => {
   const {
     thread_title,
@@ -66,7 +54,7 @@ export const newThread = async (req, res) => {
     thread_author,
     thread_timestamp,
     thread_status,
-    category_ids, // Förväntas vara ett enskilt värde eller en array med kategori-ID:n
+    category_ids,
   } = req.body;
 
   if (!thread_title || !thread_content || !thread_author) {
@@ -74,7 +62,6 @@ export const newThread = async (req, res) => {
   }
 
   try {
-    // Säkerställ att category_ids alltid är en array om den skickas med
     const categories = category_ids
       ? Array.isArray(category_ids)
         ? category_ids
@@ -86,7 +73,7 @@ export const newThread = async (req, res) => {
       thread_author,
       thread_timestamp,
       thread_status,
-      categories // Skickar en array med kategori-ID:n
+      categories
     );
     res.status(201).json({ message: "Thread created successfully", threadId });
   } catch (error) {
@@ -94,7 +81,6 @@ export const newThread = async (req, res) => {
   }
 };
 
-// Uppdatera en tråd med möjlighet att ändra kategori
 export const editThread = async (req, res) => {
   const threadId = req.params.threadId;
   if (!validateThreadId(threadId, res)) return;
@@ -105,10 +91,9 @@ export const editThread = async (req, res) => {
     thread_author,
     thread_timestamp,
     thread_status,
-    category_ids, // Ändrad: ta emot category_ids istället för category_id
+    category_ids,
   } = req.body;
 
-  // Säkerställ att category_ids hanteras som en array
   const categories = category_ids
     ? Array.isArray(category_ids)
       ? category_ids
@@ -140,7 +125,6 @@ export const editThread = async (req, res) => {
   }
 };
 
-// Radera en tråd
 export const deleteThreadById = async (req, res) => {
   const threadId = req.params.threadId;
   if (!validateThreadId(threadId, res)) return;
@@ -151,7 +135,6 @@ export const deleteThreadById = async (req, res) => {
       return res.status(400).json({ message: result.error });
     }
 
-    // Efter radering hämtar vi alla trådar (utan filter)
     const threads = await getFilteredSortedThreads({});
     res.json(threads);
   } catch (error) {
@@ -159,10 +142,8 @@ export const deleteThreadById = async (req, res) => {
   }
 };
 
-// Hämta trådar baserat på kategori (använder i så fall det dynamiska filtret)
 export const getThreadsByCategoryController = async (req, res) => {
   const categoryName = req.params.categoryName;
-  console.log("Fetching threads for category:", categoryName);
 
   try {
     const threads = await getFilteredSortedThreads({ category: categoryName });

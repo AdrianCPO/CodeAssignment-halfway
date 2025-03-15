@@ -5,7 +5,6 @@ import {
   updateComment,
 } from "../api/apiServiceComments";
 import { fetchThreads } from "../api/apiService";
-import { ErrorMessage } from "../components/ErrorMessage";
 import { CommentForm } from "../components/CommentForm";
 
 export const EditCommentViewContainer = () => {
@@ -18,7 +17,6 @@ export const EditCommentViewContainer = () => {
   const [timestamp, setTimestamp] = useState(new Date().toISOString());
   const [formError, setFormError] = useState(null);
 
-  // Hämta trådar vid mount
   useEffect(() => {
     const loadThreads = async () => {
       try {
@@ -31,7 +29,6 @@ export const EditCommentViewContainer = () => {
     loadThreads();
   }, []);
 
-  // Hämta kommentarer när tråd-id ändras
   useEffect(() => {
     const loadComments = async () => {
       try {
@@ -68,7 +65,6 @@ export const EditCommentViewContainer = () => {
     e.preventDefault();
     setFormError(null);
 
-    // Validering: kontrollera att både tråd och kommentar är valda samt att fälten inte är tomma
     if (!threadId || !commentId) {
       setFormError("Vänligen välj både tråd och kommentar.");
       return;

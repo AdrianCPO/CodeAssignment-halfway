@@ -5,12 +5,10 @@ export const DeleteCommentView = ({ comments, setComments }) => {
     try {
       await deleteComment(id);
 
-      // Ta bort kommentaren från listan utan att behöva hämta om alla kommentarer
       setComments(prevComments =>
         prevComments.filter(comment => comment.comment_id !== id)
       );
 
-      // Visa en alert när kommentaren har tagits bort
       alert("Kommentaren har tagits bort!");
     } catch (error) {
       console.error("Error deleting comment:", error);

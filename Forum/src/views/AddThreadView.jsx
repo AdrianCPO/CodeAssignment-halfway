@@ -18,7 +18,6 @@ export const AddThreadView = () => {
     e.preventDefault();
     setFormError(null);
 
-    // Enkel validering
     if (!threadTitle.trim() || !threadContent.trim() || !threadAuthor.trim()) {
       setFormError("Titel, innehåll och författare måste fyllas i.");
       return;
@@ -41,7 +40,6 @@ export const AddThreadView = () => {
         alert("Tråden har skapats!");
         const updatedThreads = await fetchThreads();
         setThreads(updatedThreads);
-        // Rensa formuläret efter lyckad skapelse
         setThreadTitle("");
         setThreadContent("");
         setThreadAuthor("");
@@ -76,7 +74,6 @@ export const AddThreadView = () => {
           placeholder="Ange ditt namn"
         />
 
-        {/* Visa inline fel om det finns */}
         <ErrorMessage message={formError} />
 
         <CategorySelect value={categoryIds} onChange={setCategoryIds} />

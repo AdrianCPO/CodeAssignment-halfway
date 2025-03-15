@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { ThreadInput } from "./ThreadInput";
 import { CategorySelect } from "./CategorySelect";
 import { ErrorMessage } from "./ErrorMessage";

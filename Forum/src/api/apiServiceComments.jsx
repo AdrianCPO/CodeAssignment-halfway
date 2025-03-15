@@ -1,4 +1,3 @@
-// apiServiceComments.jsx
 import { apiRequest } from "./apiRequest";
 
 const API_BASE_URL = "http://localhost:3000/api/comments";
@@ -13,7 +12,7 @@ export const fetchCommentsByThreadId = async threadId => {
   try {
     return await apiRequest(url, {}, "Failed to fetch comments");
   } catch (error) {
-    // Om vi får en 404 returnerar vi en tom array.
+    // Om jag får en 404 Not Found, returnerar jag en tom array.
     if (error.message.includes("404")) return [];
     throw error;
   }

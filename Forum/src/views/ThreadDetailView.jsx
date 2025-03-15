@@ -16,22 +16,23 @@ export const ThreadDetailView = () => {
   const [showComments, setShowComments] = useState(false);
 
   useEffect(() => {
+    const fetchDetails = async () => {
+      try {
+        const data = await fetchThreadById(threadId);
+        setThread(data);
+        setLoading(false);
+      } catch (error) {
+        setError(error.message);
+        setLoading(false);
+      }
+    };
+
     const foundThread = threads.find(t => t.thread_id.toString() === threadId);
-    if (foundThread) {
+    if (foundThread && foundThread.category_ids) {
       setThread(foundThread);
       setLoading(false);
     } else {
-      const fetchThreadDetails = async () => {
-        try {
-          const data = await fetchThreadById(threadId);
-          setThread(data);
-          setLoading(false);
-        } catch (error) {
-          setError(error.message);
-          setLoading(false);
-        }
-      };
-      fetchThreadDetails();
+      fetchDetails();
     }
   }, [threadId, threads]);
 
@@ -65,7 +66,7 @@ export const ThreadDetailView = () => {
         try {
           const allCategories = await fetchCategories();
           const filteredCategories = allCategories.filter(cat =>
-            thread.category_ids.includes(cat.category_id)
+            thread.category_ids.includes(Number(cat.category_id))
           );
           setThreadCategories(filteredCategories);
         } catch (error) {

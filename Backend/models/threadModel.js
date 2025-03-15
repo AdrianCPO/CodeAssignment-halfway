@@ -11,7 +11,6 @@ const runQuery = (query, params = [], errorMessage) => {
   }
 };
 
-// Dynamisk funktion som hanterar sökning, kategori och sortering
 export const getFilteredSortedThreads = ({
   searchTerm,
   category,

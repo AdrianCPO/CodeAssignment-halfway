@@ -10,7 +10,6 @@ import {
   deleteComment,
 } from "../models/commentModel.js";
 
-// Hämta alla kommentarer
 export const getComments = (req, res) => {
   try {
     const comments = getAllComments();
@@ -20,10 +19,8 @@ export const getComments = (req, res) => {
   }
 };
 
-// Hämta en specifik kommentar via ID
 export const getCommentById = (req, res) => {
   const id = req.params.id;
-  console.log("ID:", id);
   if (!id || isNaN(id)) {
     return res.status(400).json({ message: "Invalid comment ID" });
   }
@@ -42,7 +39,6 @@ export const getCommentById = (req, res) => {
   }
 };
 
-// Hämta kommentarer för en specifik tråd
 export const getCommentsByThreadIdController = (req, res) => {
   const threadId = req.params.threadId;
 
@@ -63,7 +59,6 @@ export const getCommentsByThreadIdController = (req, res) => {
   }
 };
 
-// Skapa en ny kommentar
 export const newComment = (req, res) => {
   const { comment_content, comment_author, comment_timestamp } = req.body;
   const { threadId } = req.params;
@@ -80,7 +75,6 @@ export const newComment = (req, res) => {
   }
 };
 
-// Uppdatera en kommentar
 export const editComment = (req, res) => {
   const id = req.params.id;
   const { comment_content, comment_author, comment_timestamp } = req.body;
@@ -97,7 +91,6 @@ export const editComment = (req, res) => {
   }
 };
 
-// Radera en kommentar
 export const deleteCommentById = (req, res) => {
   const id = req.params.id;
 

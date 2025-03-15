@@ -1,4 +1,3 @@
-// ErrorMessage.jsx
 export const ErrorMessage = ({ message }) => {
   if (!message) return null;
 
