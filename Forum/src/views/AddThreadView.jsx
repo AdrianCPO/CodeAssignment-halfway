@@ -23,7 +23,7 @@ export const AddThreadView = () => {
       return;
     }
 
-    const threadTimestamp = new Date().toLocaleString();
+    const threadTimestamp = new Date().toISOString();
 
     const newThread = {
       thread_title: threadTitle,

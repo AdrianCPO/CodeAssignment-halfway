@@ -1,5 +1,3 @@
-//definierar datamodeller och hantera interaktioner med databasen
-
 import { db } from "../config/database.js";
 
 const runQuery = (query, params = [], errorMessage) => {
@@ -12,16 +10,7 @@ const runQuery = (query, params = [], errorMessage) => {
   }
 };
 
-// Hämta alla kommentarer
-export const getAllComments = () => {
-  return runQuery(
-    "SELECT * FROM comments ORDER BY comment_timestamp DESC",
-    [],
-    "Error fetching comments from database"
-  );
-};
 
-// Hämta kommentarer för en specifik tråd
 export const getCommentsByThreadId = threadId => {
   if (!threadId || isNaN(threadId)) {
     throw new Error("Invalid thread ID");
@@ -34,7 +23,6 @@ export const getCommentsByThreadId = threadId => {
   );
 };
 
-// Skapa en ny kommentar
 export const createComment = (
   comment_content,
   comment_author,
@@ -56,7 +44,6 @@ export const createComment = (
   }
 };
 
-// Uppdatera en kommentar
 export const updateComment = (
   id,
   comment_content,
@@ -89,7 +76,6 @@ export const updateComment = (
   }
 };
 
-// Radera en kommentar
 export const deleteComment = id => {
   if (!id || isNaN(id)) {
     throw new Error("Invalid comment ID");

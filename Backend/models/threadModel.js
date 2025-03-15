@@ -1,6 +1,5 @@
 import { db } from "../config/database.js";
 
-// Generisk SQL-hanteringsfunktion för att minska kodupprepning
 const runQuery = (query, params = [], errorMessage) => {
   try {
     const stmt = db.prepare(query);
@@ -63,7 +62,6 @@ export const getFilteredSortedThreads = ({
   } else if (sortBy === "activity") {
     orderBy = "last_activity";
   }
-  // Ändra från att använda datetime(last_activity) till att sortera direkt på last_activity
   if (orderBy === "last_activity") {
     query += " ORDER BY last_activity DESC";
   } else {
@@ -76,12 +74,10 @@ export const getFilteredSortedThreads = ({
   }));
 };
 
-// Hämta alla trådar (utan filter eller sökterm)
 export const getAllThreads = () => {
   return getFilteredSortedThreads();
 };
 
-// Hämta en enskild tråd med dess data och en array med tillhörande kategori-ID:n
 export const getThreadById = threadId => {
   if (!threadId || isNaN(threadId)) throw new Error("Invalid thread ID");
 
@@ -93,8 +89,8 @@ export const getThreadById = threadId => {
       const stmtCat = db.prepare(
         "SELECT category_id FROM threadsXcategories WHERE thread_id = ?"
       );
-      const catRows = stmtCat.all(threadId);
-      thread.category_ids = catRows.map(row => row.category_id);
+      const categoryRows = stmtCat.all(threadId);
+      thread.category_ids = categoryRows.map(row => row.category_id);
     }
 
     return thread;
@@ -104,8 +100,6 @@ export const getThreadById = threadId => {
   }
 };
 
-// Skapa en ny tråd med stöd för kategori (en kategori per tråd)
-// Förväntar sig att du skickar in en array med kategori-ID:n
 export const createThread = async (
   thread_title,
   thread_content,
@@ -147,8 +141,6 @@ export const createThread = async (
   }
 };
 
-// Uppdatera en befintlig tråd med stöd för att ändra kategorier
-// Förväntar sig att category_ids är en array med nya kategori-ID:n
 export const updateThread = (
   threadId,
   thread_title,
@@ -185,18 +177,16 @@ export const updateThread = (
       throw new Error("No thread was updated. Maybe the thread doesn't exist.");
     }
 
-    // Ta bort alla befintliga relationer för tråden
     db.prepare("DELETE FROM threadsXcategories WHERE thread_id = ?").run(
       threadId
     );
 
-    // Infoga nya relationer baserat på den skickade arrayen
     if (Array.isArray(category_ids) && category_ids.length > 0) {
       const insertStmt = db.prepare(
         "INSERT INTO threadsXcategories (thread_id, category_id) VALUES (?, ?)"
       );
-      for (const catId of category_ids) {
-        insertStmt.run(threadId, catId);
+      for (const categoryId of category_ids) {
+        insertStmt.run(threadId, categoryId);
       }
     }
   } catch (error) {
@@ -205,7 +195,6 @@ export const updateThread = (
   }
 };
 
-// Radera en tråd och alla kopplade kommentarer samt kategori-relationer
 export const deleteThread = threadId => {
   if (!threadId || isNaN(threadId)) throw new Error("Invalid thread ID");
 

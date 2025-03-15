@@ -1,23 +1,11 @@
-//hantera logiken för inkommande HTTP-förfrågningar och skicka rätt svar tillbaka till klienten
-
 import { db } from "../config/database.js";
 import { handleServerError } from "../utils/handleServerError.js";
 import {
-  getAllComments,
   getCommentsByThreadId,
   createComment,
   updateComment,
   deleteComment,
 } from "../models/commentModel.js";
-
-export const getComments = (req, res) => {
-  try {
-    const comments = getAllComments();
-    res.json(comments);
-  } catch (error) {
-    handleServerError(res, "fetching comments", error);
-  }
-};
 
 export const getCommentById = (req, res) => {
   const id = req.params.id;
