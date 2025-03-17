@@ -24,11 +24,6 @@ export const createThread = async newThread => {
   return await apiRequest(url, options, "Failed to create thread");
 };
 
-export const updateThread = async () => {
-  const url = THREAD_BASE_URL;
-  return await apiRequest(url, {}, "Failed to fetch threads");
-};
-
 export const updateThreadById = async (threadId, updatedThread) => {
   const url = `${THREAD_BASE_URL}/edit-thread/${threadId}`;
   const options = {
