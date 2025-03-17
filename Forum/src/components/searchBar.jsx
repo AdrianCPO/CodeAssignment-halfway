@@ -7,14 +7,7 @@ export const SearchBar = ({ searchTerm, onSearchChange }) => {
         onChange={e => onSearchChange(e.target.value)}
         placeholder="Sök efter titel, innehåll eller författare..."
       />
-      {searchTerm && (
-        <button
-          onClick={() => onSearchChange("")}
-          style={{ cursor: "pointer" }}
-        >
-          x
-        </button>
-      )}
+      {searchTerm && <button onClick={() => onSearchChange("")}>x</button>}
     </div>
   );
 };
