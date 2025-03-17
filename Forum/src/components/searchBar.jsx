@@ -1,9 +1,6 @@
 export const SearchBar = ({ searchTerm, onSearchChange }) => {
   return (
-    <div
-      className="container-search-bar"
-      style={{ display: "flex", alignItems: "center", gap: "8px" }}
-    >
+    <div className="container-search-bar">
       <input
         type="text"
         value={searchTerm}
