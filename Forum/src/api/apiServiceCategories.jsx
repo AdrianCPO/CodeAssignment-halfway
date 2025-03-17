@@ -1,14 +1,14 @@
 import { apiRequest } from "./apiRequest";
 
-const BASE_URL = "http://localhost:3000/api/categories";
+const CATEGORY_BASE_URL = "http://localhost:3000/api/categories";
 
 export const fetchCategories = async () => {
-  const url = BASE_URL;
+  const url = CATEGORY_BASE_URL;
   return await apiRequest(url, {}, "Failed to fetch categories");
 };
 
 export const fetchCategoryByName = async categoryName => {
-  const url = `${BASE_URL}/category/${categoryName}`;
+  const url = `${CATEGORY_BASE_URL}/category/${categoryName}`;
   return await apiRequest(url, {}, "Failed to fetch category by name");
 };
 
@@ -18,11 +18,11 @@ export const createCategory = async newCategory => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(newCategory),
   };
-  return await apiRequest(BASE_URL, options, "Failed to create category");
+  return await apiRequest(CATEGORY_BASE_URL, options, "Failed to create category");
 };
 
 export const updateCategory = async (categoryId, updatedCategory) => {
-  const url = `${BASE_URL}/${categoryId}`;
+  const url = `${CATEGORY_BASE_URL}/${categoryId}`;
   const options = {
     method: "PUT",
     headers: { "Content-Type": "application/json" },

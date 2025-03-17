@@ -55,3 +55,6 @@ textarea {
   resize: vertical;
   min-height: 80px;
 }
+.category-select-label {
+  display: block;
+}

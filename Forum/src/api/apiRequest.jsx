@@ -15,7 +15,6 @@ export const apiRequest = async (
     }
     return null;
   } catch (error) {
-    // Om Not Found, loggar jag inget i consolen
     if (!error.message.includes("HTTP 404")) {
       console.error(errorMessage, error);
     }

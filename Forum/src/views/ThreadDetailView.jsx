@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useThreadContext } from "../ThreadContextProvider";
 import { fetchThreadById } from "../api/apiService";
-import { deleteComment } from "../api/apiServiceComments";
+import {
+  fetchCommentsByThreadId,
+  deleteComment,
+} from "../api/apiServiceComments";
 import { fetchCategories } from "../api/apiServiceCategories";
 
 export const ThreadDetailView = () => {
@@ -18,45 +21,36 @@ export const ThreadDetailView = () => {
   useEffect(() => {
     const fetchDetails = async () => {
       try {
-        const data = await fetchThreadById(threadId);
-        setThread(data);
-        setLoading(false);
+        const foundThread = threads.find(
+          t => t.thread_id.toString() === threadId
+        );
+        if (foundThread && foundThread.category_ids) {
+          setThread(foundThread);
+        } else {
+          const data = await fetchThreadById(threadId);
+          setThread(data);
+        }
       } catch (error) {
         setError(error.message);
+      } finally {
         setLoading(false);
       }
     };
 
-    const foundThread = threads.find(t => t.thread_id.toString() === threadId);
-    if (foundThread && foundThread.category_ids) {
-      setThread(foundThread);
-      setLoading(false);
-    } else {
-      fetchDetails();
-    }
+    fetchDetails();
   }, [threadId, threads]);
 
   useEffect(() => {
     const fetchThreadComments = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:3000/api/comments/${threadId}`
-        );
-        if (!response.ok) {
-          if (response.status === 404) {
-            setComments([]);
-          } else {
-            throw new Error("Det gick inte att hämta kommentarer");
-          }
-        } else {
-          const data = await response.json();
-          setComments(data);
-        }
+        const data = await fetchCommentsByThreadId(threadId);
+        setComments(data);
       } catch (error) {
         setError(error.message);
         setComments([]);
       }
     };
+
     fetchThreadComments();
   }, [threadId]);
 
@@ -76,6 +70,7 @@ export const ThreadDetailView = () => {
         setThreadCategories([]);
       }
     };
+
     fetchThreadCategories();
   }, [thread]);
 

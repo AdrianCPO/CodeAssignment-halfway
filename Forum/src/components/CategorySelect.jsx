@@ -21,8 +21,8 @@ export const CategorySelect = ({ value, onChange }) => {
     setIsOpen(prev => !prev);
   };
 
-  const handleCheckboxChange = (e, categoryId) => {
-    if (e.target.checked) {
+  const handleCheckboxChange = (event, categoryId) => {
+    if (event.target.checked) {
       onChange([...value, categoryId]);
     } else {
       onChange(value.filter(id => id !== categoryId));
@@ -39,24 +39,14 @@ export const CategorySelect = ({ value, onChange }) => {
       : "Välj kategori(er)";
 
   return (
-    <div style={{ position: "relative", display: "inline-block" }}>
+    <div className="category-select-container">
       <button type="button" onClick={toggleDropdown}>
         {buttonLabel}
       </button>
       {isOpen && (
-        <div
-          style={{
-            position: "absolute",
-            background: "#fff",
-            border: "1px solid #ccc",
-            padding: "8px",
-            zIndex: 1000,
-            maxHeight: "200px",
-            overflowY: "auto",
-          }}
-        >
+        <div className="category-dropdown">
           {categories.map(cat => (
-            <label key={cat.category_id} style={{ display: "block" }}>
+            <label key={cat.category_id} className="category-select-label">
               <input
                 type="checkbox"
                 value={cat.category_id}

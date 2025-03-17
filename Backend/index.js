@@ -9,12 +9,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Använd routes
+
 app.use("/api/threads", threadRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/categories", categoryRoutes);
 
-// Global felhantering
+
 app.use((err, req, res, next) => {
   console.error("Unexpected error:", err.message);
   res.status(500).json({ message: "An unexpected error occurred" });

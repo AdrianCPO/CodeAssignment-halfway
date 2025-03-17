@@ -31,7 +31,6 @@ export const AddCommentView = () => {
     e.preventDefault();
     setFormError(null);
 
-    // Validering: kontrollera att både kommentar och författare inte är tomma
     if (!comment.trim() || !author.trim()) {
       setFormError("Både kommentar och författarnamn måste fyllas i.");
       return;

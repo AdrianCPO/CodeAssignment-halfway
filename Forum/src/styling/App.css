@@ -20,3 +20,7 @@ h2,
 h3 {
   color: var(--primary-color);
 }
+.error-message {
+  color: red;
+  margin: 0.5rem 0;
+}

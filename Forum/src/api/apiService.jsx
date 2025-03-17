@@ -1,19 +1,21 @@
 import { apiRequest } from "./apiRequest";
 
+const THREAD_BASE_URL = "http://localhost:3000/api/threads";
+
 export const fetchThreads = async (sortBy, searchTerm) => {
-  let url = `http://localhost:3000/api/threads?sortBy=${sortBy}`;
+  let url = `${THREAD_BASE_URL}?sortBy=${sortBy}`;
   if (searchTerm) url += `&searchTerm=${searchTerm}`;
 
   return await apiRequest(url, {}, "Failed to fetch threads");
 };
 
 export const fetchThreadById = async threadId => {
-  const url = `http://localhost:3000/api/threads/${threadId}`;
+  const url = `${THREAD_BASE_URL}/${threadId}`;
   return await apiRequest(url, {}, "Thread not found");
 };
 
 export const createThread = async newThread => {
-  const url = "http://localhost:3000/api/threads/new-thread";
+  const url = `${THREAD_BASE_URL}/new-thread`;
   const options = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -23,12 +25,12 @@ export const createThread = async newThread => {
 };
 
 export const updateThread = async () => {
-  const url = "http://localhost:3000/api/threads";
+  const url = THREAD_BASE_URL;
   return await apiRequest(url, {}, "Failed to fetch threads");
 };
 
 export const updateThreadById = async (threadId, updatedThread) => {
-  const url = `http://localhost:3000/api/threads/edit-thread/${threadId}`;
+  const url = `${THREAD_BASE_URL}/edit-thread/${threadId}`;
   const options = {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
@@ -38,14 +40,14 @@ export const updateThreadById = async (threadId, updatedThread) => {
 };
 
 export const deleteThread = async threadId => {
-  const url = `http://localhost:3000/api/threads/delete-thread/${threadId}`;
+  const url = `${THREAD_BASE_URL}/delete-thread/${threadId}`;
   const options = { method: "DELETE" };
-  // Här returneras inget, men jag ger felmeddelande om något går fel.
+
   await apiRequest(url, options, "Failed to delete thread");
 };
 
 export const fetchThreadsByCategory = async categoryName => {
-  const url = `http://localhost:3000/api/threads/category/${categoryName}`;
+  const url = `${THREAD_BASE_URL}/category/${categoryName}`;
   try {
     return await apiRequest(url, {}, "Failed to fetch threads by category");
   } catch (error) {
