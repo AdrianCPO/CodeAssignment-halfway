@@ -1,4 +1,3 @@
-// EditCommentViewContainer.jsx
 import { useState, useEffect } from "react";
 import {
   fetchCommentsByThreadId,

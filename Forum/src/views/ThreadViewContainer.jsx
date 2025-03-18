@@ -1,4 +1,3 @@
-// ThreadViewContainer.jsx
 import { useEffect, useState } from "react";
 import { useThreadContext } from "../ThreadContextProvider";
 import { fetchThreads, fetchThreadsByCategory } from "../api/apiService";
