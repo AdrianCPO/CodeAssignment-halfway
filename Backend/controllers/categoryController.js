@@ -6,6 +6,14 @@ import {
 } from "../models/categoryModel.js";
 import { handleServerError } from "../utils/handleServerError.js";
 
+const validateNumericId = (id, res, errorMessage = "Invalid ID format") => {
+  if (!id || isNaN(id)) {
+    res.status(400).json({ message: errorMessage });
+    return false;
+  }
+  return true;
+};
+
 export const getAllCategoriesController = async (req, res) => {
   try {
     const categories = await getAllCategories();
@@ -17,10 +25,12 @@ export const getAllCategoriesController = async (req, res) => {
 
 export const getCategoryByIdController = async (req, res) => {
   const categoryId = req.params.categoryId;
+  if (!validateNumericId(categoryId, res, "Invalid category ID")) return;
+
   try {
     const category = await getCategoryById(categoryId);
     if (!category) {
-      return res.status(404).json({ error: "Category not found" });
+      return res.status(404).json({ message: "Category not found" });
     }
     res.json(category);
   } catch (error) {
@@ -31,9 +41,8 @@ export const getCategoryByIdController = async (req, res) => {
 export const createCategoryController = async (req, res) => {
   const { category_name } = req.body;
   if (!category_name) {
-    return res.status(400).json({ error: "Missing category_name" });
+    return res.status(400).json({ message: "Missing category_name" });
   }
-
   try {
     const newCategoryId = await createCategory(category_name);
     res
@@ -45,15 +54,17 @@ export const createCategoryController = async (req, res) => {
 };
 
 export const updateCategoryController = async (req, res) => {
-  const { category_name } = req.body;
   const { categoryId } = req.params;
+  const { category_name } = req.body;
 
-  if (!categoryId || !category_name) {
+  if (
+    !validateNumericId(categoryId, res, "Invalid category ID") ||
+    !category_name
+  ) {
     return res
       .status(400)
-      .json({ error: "Missing category ID or category_name" });
+      .json({ message: "Missing category ID or category_name" });
   }
-
   try {
     await updateCategory(categoryId, category_name);
     res.json({ message: "Category updated" });

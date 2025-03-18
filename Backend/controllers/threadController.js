@@ -7,24 +7,18 @@ import {
   deleteThread,
 } from "../models/threadModel.js";
 
-const validateThreadId = (threadId, res) => {
-  if (!threadId || isNaN(threadId)) {
-    res.status(400).json({ message: "Invalid thread ID format" });
+const validateNumericId = (id, res, errorMessage = "Invalid ID format") => {
+  if (!id || isNaN(id)) {
+    res.status(400).json({ message: errorMessage });
     return false;
   }
   return true;
 };
 
-// Hämta trådar med sökning, kategori och sortering
 export const getThreads = async (req, res) => {
   const { searchTerm, category, sortBy } = req.query;
-
   try {
-    const threads = await getFilteredSortedThreads({
-      searchTerm,
-      category,
-      sortBy,
-    });
+    const threads = await getFilteredSortedThreads({ searchTerm, category, sortBy });
     res.json(threads);
   } catch (error) {
     handleServerError(res, "fetching threads", error);
@@ -33,7 +27,7 @@ export const getThreads = async (req, res) => {
 
 export const getThreadByIdController = async (req, res) => {
   const threadId = req.params.threadId;
-  if (!validateThreadId(threadId, res)) return;
+  if (!validateNumericId(threadId, res, "Invalid thread ID format")) return;
 
   try {
     const thread = await getThreadById(threadId);
@@ -83,7 +77,7 @@ export const newThread = async (req, res) => {
 
 export const editThread = async (req, res) => {
   const threadId = req.params.threadId;
-  if (!validateThreadId(threadId, res)) return;
+  if (!validateNumericId(threadId, res, "Invalid thread ID format")) return;
 
   const {
     thread_title,
@@ -94,17 +88,16 @@ export const editThread = async (req, res) => {
     category_ids,
   } = req.body;
 
-  const categories = category_ids
-    ? Array.isArray(category_ids)
-      ? category_ids
-      : [category_ids]
-    : [];
-
   if (!thread_title || !thread_content || !thread_author) {
     return res.status(400).json({ message: "Missing required fields" });
   }
 
   try {
+    const categories = category_ids
+      ? Array.isArray(category_ids)
+        ? category_ids
+        : [category_ids]
+      : [];
     await updateThread(
       threadId,
       thread_title,
@@ -127,14 +120,13 @@ export const editThread = async (req, res) => {
 
 export const deleteThreadById = async (req, res) => {
   const threadId = req.params.threadId;
-  if (!validateThreadId(threadId, res)) return;
+  if (!validateNumericId(threadId, res, "Invalid thread ID format")) return;
 
   try {
     const result = await deleteThread(threadId);
     if (result.error) {
       return res.status(400).json({ message: result.error });
     }
-
     const threads = await getFilteredSortedThreads({});
     res.json(threads);
   } catch (error) {
@@ -144,17 +136,13 @@ export const deleteThreadById = async (req, res) => {
 
 export const getThreadsByCategoryController = async (req, res) => {
   const categoryName = req.params.categoryName;
-
   try {
     const threads = await getFilteredSortedThreads({ category: categoryName });
     if (!threads || threads.length === 0) {
-      return res
-        .status(404)
-        .json({ error: "No threads found for this category" });
+      return res.status(404).json({ message: "No threads found for this category" });
     }
     res.json(threads);
   } catch (error) {
-    console.error("Error fetching threads by category:", error);
-    res.status(500).json({ error: "Failed to fetch threads by category" });
+    handleServerError(res, "fetching threads by category", error);
   }
 };
